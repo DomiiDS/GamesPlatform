@@ -16,7 +16,12 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from GamePlatformApp.views import *
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('', Welcome.as_view(), name="welcome"),
+    path('login', Login.as_view(), name="login"),
+    path('register', Register.as_view(), name="register"),
+    path('register/success', RegisterSuccess.as_view(), name="register_success"),
 ]

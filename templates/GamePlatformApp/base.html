@@ -1,0 +1,12 @@
+{% load static %}
+<link rel="stylesheet" href="{% static 'css/base.css' %}">
+
+<br><h1>Game Platform</h1>
+
+<a href="{% url 'welcome' %}">Home</a>
+<a href="{% url 'login' %}">Log in</a>
+<a href="{% url 'register' %}">Register</a>
+
+<br><br>
+{% block content %}
+{% endblock %}

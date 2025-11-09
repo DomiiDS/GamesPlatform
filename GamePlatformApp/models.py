@@ -3,10 +3,12 @@ from django.core.exceptions import ValidationError
 import re
 
 def ValidateUser(user):
-    pass
+    if re.fullmatch(r"^\w+$", user) == None:
+        raise ValidationError(("Username must only contain alphanumerical characters or _"), code = "invalid")
 
 def ValidatePassword(password):
-    pass
+    if re.fullmatch(r"^[^\s]+$", password) == None:
+        raise ValidationError(("Password must not contain whitespaces"), code = "invalid")
 
 def ValidateEmail(email):
     if re.fullmatch(r"^[\w\.]+@([\w-]+\.)+[\w-]{2,4}$", email) == None:

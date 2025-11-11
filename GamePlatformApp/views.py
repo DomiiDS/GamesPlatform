@@ -1,7 +1,8 @@
-from django.shortcuts import render, redirect
-from django.views.generic import TemplateView
+from django.shortcuts import render, redirect, get_object_or_404
+from django.views.generic import TemplateView, ListView, UpdateView, View
 from django.urls import reverse_lazy
 from .forms import UserForm
+from .models import User
 
 # Create your views here.
 
@@ -31,3 +32,25 @@ class Register(TemplateView):
 
 class RegisterSuccess(TemplateView):
     template_name = "GamePlatformApp/register_success.html"
+
+class UserListView(ListView):
+    model = User
+    template_name = 'GamePlatformApp/users/user_list.html'
+    context_object_name = 'users'
+
+    def get_queryset(self):
+        return User.objects.filter(isdeleted=False)
+
+class UserUpdateView(UpdateView):
+    model = User
+    form_class = UserForm
+    template_name = 'GamePlatformApp/users/user_form.html'
+    success_url = '/users/'
+
+class UserDeleteView(View):
+    def post(self,request,pk):
+        user = get_object_or_404(User,pk=pk)
+        user.isdeleted = True
+        user.save()
+        return redirect('/users/')
+

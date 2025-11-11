@@ -1,0 +1,21 @@
+<h1>User List</h1>
+<table>
+    <tr>
+        <th>Username</th>
+        <th>Email</th>
+        <th>Manage</th>
+    </tr>
+    {% for user in users %}
+    <tr>
+        <td>{{ user.username }}</td>
+        <td>{{ user.email }}</td>
+        <td>
+            <a href="{% url 'user-edit' user.pk %}">Edit</a>
+            <form action="{% url 'user-delete' user.pk %}" method="post" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit">Delete</button>
+            </form>
+        </td>
+    </tr>
+    {% endfor %}
+</table>

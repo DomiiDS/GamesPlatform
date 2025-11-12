@@ -1,4 +1,18 @@
 from django.db import models
+from django.core.exceptions import ValidationError
+import re
+
+def ValidateUser(user):
+    if re.fullmatch(r"^\w+$", user) == None:
+        raise ValidationError(("Username must only contain alphanumerical characters or _"), code = "invalid")
+
+def ValidatePassword(password):
+    if re.fullmatch(r"^[^\s]+$", password) == None:
+        raise ValidationError(("Password must not contain whitespaces"), code = "invalid")
+
+def ValidateEmail(email):
+    if re.fullmatch(r"^[\w\.]+@([\w-]+\.)+[\w-]{2,4}$", email) == None:
+        raise ValidationError(("Must be a valid email address"), code = "invalid")
 
 # Create your models here.
 

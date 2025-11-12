@@ -24,4 +24,7 @@ urlpatterns = [
     path('login', Login.as_view(), name="login"),
     path('register', Register.as_view(), name="register"),
     path('register/success', RegisterSuccess.as_view(), name="register_success"),
+    path('users/', UserListView.as_view(), name='user-list'),
+    path('users/<int:pk>/edit/', UserUpdateView.as_view(), name='user-edit'),
+    path('users/<int:pk>/delete/', UserDeleteView.as_view(), name='user-delete'),
 ]

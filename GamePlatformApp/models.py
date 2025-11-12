@@ -17,9 +17,9 @@ def ValidateEmail(email):
 # Create your models here.
 
 class User(models.Model):
-    username = models.CharField(max_length = 100)
-    password = models.CharField(max_length = 100)
-    email = models.CharField(max_length = 100)
+    username = models.CharField(max_length = 100, validators=[ValidateUser])
+    password = models.CharField(max_length = 100, validators=[ValidatePassword])
+    email = models.CharField(max_length = 100, validators=[ValidateEmail])
     isdeleted = models.BooleanField(default=False)
 
     def __str__(self):

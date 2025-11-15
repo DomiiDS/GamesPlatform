@@ -3,10 +3,20 @@
 
 <br><h1>Game Platform</h1>
 
-<a href="{% url 'welcome' %}">Home</a>
-<a href="{% url 'login' %}">Log in</a>
-<a href="{% url 'register' %}">Register</a>
-<a href="{% url 'user-list' %}">[TEMPORARY] Manage users</a>
+<a href="{% url 'home' %}">Home</a>
+
+{% if user.is_authenticated %}
+    <p>Hello, {{ user.username }}!</p>
+    <form action="{% url 'logout' %}" method="post">
+        {% csrf_token %}
+        <button type="submit">Log out</button>
+    </form>
+{% else %}
+    <p><a href="{% url 'register' %}">Register</a>
+    <a href="{% url 'login' %}">Log in</a></p>
+{% endif %}
+
+<p><a href="{% url 'user-list' %}">[TEMPORARY] Manage users</a></p>
 
 <br><br>
 {% block content %}

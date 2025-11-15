@@ -1,18 +1,13 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import TemplateView, ListView, UpdateView, View
 from django.urls import reverse_lazy
-from .forms import UserForm
 from .models import User
+from .forms import UserForm
 
-# Create your views here.
+class HomeView(TemplateView):
+    template_name = "GamePlatformApp/home.html"
 
-class Welcome(TemplateView):
-    template_name = "GamePlatformApp/welcome.html"
-
-class Login(TemplateView):
-    template_name = "GamePlatformApp/login.html"
-
-class Register(TemplateView):
+class RegisterView(TemplateView):
     template_name = "GamePlatformApp/register.html"
 
     def get_context_data(self, **kwargs):
@@ -23,14 +18,14 @@ class Register(TemplateView):
     def post(self, request, *args, **kwargs):
         form = UserForm(request.POST)
         if form.is_valid():
-            new_user = form.save()
+            form.save()
             return redirect(reverse_lazy("register_success"))
 
         context = self.get_context_data(**kwargs)
         context['form'] = form
         return self.render_to_response(context)
 
-class RegisterSuccess(TemplateView):
+class RegisterSuccessView(TemplateView):
     template_name = "GamePlatformApp/register_success.html"
 
 class UserListView(ListView):
@@ -39,7 +34,7 @@ class UserListView(ListView):
     context_object_name = 'users'
 
     def get_queryset(self):
-        return User.objects.filter(isdeleted=False)
+        return User.objects.filter(is_active=True)
 
 class UserUpdateView(UpdateView):
     model = User
@@ -48,9 +43,9 @@ class UserUpdateView(UpdateView):
     success_url = '/users/'
 
 class UserDeleteView(View):
-    def post(self,request,pk):
-        user = get_object_or_404(User,pk=pk)
-        user.isdeleted = True
+    def post(self, request, pk):
+        user = get_object_or_404(User, pk=pk)
+        user.is_active = False
+        user.username += "<deleted_" + str(pk) + ">"
         user.save()
         return redirect('/users/')
-

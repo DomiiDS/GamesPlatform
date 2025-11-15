@@ -1,11 +1,9 @@
 from django import forms
-from .models import User
+from django.contrib.auth.forms import UserCreationForm
+from .views import User
 
-class UserForm(forms.ModelForm):
+class UserForm(UserCreationForm):
 
     class Meta:
         model = User
-        fields = ["username", "password", "email"]
-        widgets = {
-            "password": forms.PasswordInput(),
-        }
+        fields = ("username", "password1", "password2", "email")

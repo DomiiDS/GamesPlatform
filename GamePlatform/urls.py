@@ -31,5 +31,6 @@ urlpatterns = [
     path('users/', UserListView.as_view(), name='user-list'),
     path('users/<int:pk>/edit/', UserUpdateView.as_view(), name='user-edit'),
     path('users/<int:pk>/delete/', UserDeleteView.as_view(), name='user-delete'),
-    path('profile/<int:pk>/', UserProfileView.as_view(), name="user-profile")
+    path('profile/<int:pk>/', UserProfileView.as_view(), name="user-profile"),
+    path('profile/<int:pk>/edit/', ProfileUpdateView.as_view(), name="profile-edit")
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

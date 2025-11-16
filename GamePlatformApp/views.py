@@ -1,12 +1,17 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import TemplateView, ListView, UpdateView, View, DetailView
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 from .models import User
-from .forms import UserForm
+from .forms import UserForm, ProfileForm
 from django.core.exceptions import PermissionDenied
 
-class HomeView(TemplateView):
-    template_name = "GamePlatformApp/home.html"
+class HomeView(ListView):
+    model = User
+    template_name = 'GamePlatformApp/home.html'
+    context_object_name = 'users'
+
+    def get_queryset(self):
+        return User.objects.filter(is_active=True)
 
 class RegisterView(TemplateView):
     template_name = "GamePlatformApp/register.html"
@@ -65,3 +70,19 @@ class UserProfileView(DetailView):
     model = User
     template_name = 'GamePlatformApp/users/profile.html'
     context_object_name = 'profile_user'
+
+class ProfileUpdateView(UpdateView):
+    model = User
+    form_class = ProfileForm
+    template_name = 'GamePlatformApp/users/profile_form.html'
+    success_url = '/'
+
+    def dispatch(self, request, *args, **kwargs):
+        # Get the user being edited
+        obj = self.get_object()
+
+        # Prevent editing someone else's profile
+        if obj != request.user:
+            raise PermissionDenied("You cannot edit someone else's profile.")
+
+        return super().dispatch(request, *args, **kwargs)

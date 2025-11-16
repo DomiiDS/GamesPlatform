@@ -9,7 +9,7 @@
 <img src = "{{ profile_user.profile_picture.url }}"></img>
 <h1>{{ profile_user.username }}</h1>
 {% if request.user == profile_user %}
-<p>Edit profile</p>
+<p><a href="{% url 'profile-edit' user.pk %}">Edit profile</a></p>
 {% endif %}
 <p>{{ profile_user.bio }}</p>
 <p>{{ profile_user.created_at }}</p>

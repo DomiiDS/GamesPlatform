@@ -1,0 +1,16 @@
+<style>
+    img{
+        border-radius: 50%;
+        height: 100px;
+        width: 100px;
+    }
+</style>
+<p><a href = "{% url 'home' %}">Home</a></p>
+<img src = "{{ profile_user.profile_picture.url }}"></img>
+<h1>{{ profile_user.username }}</h1>
+{% if request.user == profile_user %}
+<p>Edit profile</p>
+{% endif %}
+<p>{{ profile_user.bio }}</p>
+<p>{{ profile_user.created_at }}</p>
+<p>{{ profile_user.updated_at }}</p>

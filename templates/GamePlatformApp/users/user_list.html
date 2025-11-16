@@ -1,12 +1,21 @@
 <h1>User List</h1>
+<style>
+    img{
+        border-radius: 50%;
+        height: 30px;
+        width: 30px;
+    }
+</style>
 <table>
     <tr>
+        <th>Picture</th>
         <th>Username</th>
         <th>Email</th>
         <th>Manage</th>
     </tr>
     {% for user in users %}
     <tr>
+        <td><img src ="{{ user.profile_picture.url }}" alt = "{{ user.username }}"></img></td>
         <td>{{ user.username }}</td>
         <td>{{ user.email }}</td>
         <td>

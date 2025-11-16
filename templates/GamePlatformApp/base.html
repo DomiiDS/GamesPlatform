@@ -6,7 +6,7 @@
 <a href="{% url 'home' %}">Home</a>
 
 {% if user.is_authenticated %}
-    <p>Hello, {{ user.username }}!</p>
+    <p>Hello, <a href="{% url 'user-profile' user.pk %}">{{ user.username }}</a>!</p>
     <form action="{% url 'logout' %}" method="post">
         {% csrf_token %}
         <button type="submit">Log out</button>

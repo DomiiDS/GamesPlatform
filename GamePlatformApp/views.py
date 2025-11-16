@@ -1,8 +1,9 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.views.generic import TemplateView, ListView, UpdateView, View
+from django.views.generic import TemplateView, ListView, UpdateView, View, DetailView
 from django.urls import reverse_lazy
 from .models import User
 from .forms import UserForm
+from django.core.exceptions import PermissionDenied
 
 class HomeView(TemplateView):
     template_name = "GamePlatformApp/home.html"
@@ -42,6 +43,16 @@ class UserUpdateView(UpdateView):
     template_name = 'GamePlatformApp/users/user_form.html'
     success_url = '/users/'
 
+    def dispatch(self, request, *args, **kwargs):
+        # Get the user being edited
+        obj = self.get_object()
+
+        # Prevent editing someone else's profile
+        if obj != request.user:
+            raise PermissionDenied("You cannot edit someone else's profile.")
+
+        return super().dispatch(request, *args, **kwargs)
+
 class UserDeleteView(View):
     def post(self, request, pk):
         user = get_object_or_404(User, pk=pk)
@@ -49,3 +60,8 @@ class UserDeleteView(View):
         user.username += "<deleted_" + str(pk) + ">"
         user.save()
         return redirect('/users/')
+    
+class UserProfileView(DetailView):
+    model = User
+    template_name = 'GamePlatformApp/users/profile.html'
+    context_object_name = 'profile_user'

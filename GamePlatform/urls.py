@@ -18,6 +18,8 @@ from django.contrib import admin
 from django.urls import path
 from django.contrib.auth.views import LoginView, LogoutView
 from GamePlatformApp.views import *
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -29,4 +31,5 @@ urlpatterns = [
     path('users/', UserListView.as_view(), name='user-list'),
     path('users/<int:pk>/edit/', UserUpdateView.as_view(), name='user-edit'),
     path('users/<int:pk>/delete/', UserDeleteView.as_view(), name='user-delete'),
-]
+    path('profile/<int:pk>/', UserProfileView.as_view(), name="user-profile")
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

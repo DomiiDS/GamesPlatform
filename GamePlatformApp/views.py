@@ -43,7 +43,7 @@ class UserUpdateView(UpdateView):
     template_name = 'GamePlatformApp/users/user_form.html'
     success_url = '/users/'
 
-    def dispatch(self, request, *args, **kwargs):
+    """def dispatch(self, request, *args, **kwargs):
         # Get the user being edited
         obj = self.get_object()
 
@@ -51,7 +51,7 @@ class UserUpdateView(UpdateView):
         if obj != request.user:
             raise PermissionDenied("You cannot edit someone else's profile.")
 
-        return super().dispatch(request, *args, **kwargs)
+        return super().dispatch(request, *args, **kwargs)"""
 
 class UserDeleteView(View):
     def post(self, request, pk):

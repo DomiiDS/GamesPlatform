@@ -1,8 +1,8 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import TemplateView, ListView, UpdateView, View, DetailView
 from django.urls import reverse_lazy, reverse
-from .models import User
-from .forms import UserForm, ProfileForm
+from .models import User, Comment
+from .forms import UserForm, ProfileForm, CommentForm
 from django.core.exceptions import PermissionDenied
 
 class HomeView(ListView):
@@ -70,6 +70,26 @@ class UserProfileView(DetailView):
     model = User
     template_name = 'GamePlatformApp/users/profile.html'
     context_object_name = 'profile_user'
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        profile_user = self.get_object()
+        context['comments'] = profile_user.comments_received.all()
+        context['form'] = CommentForm()
+        return context
+    def post(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect('login')
+        self.object = self.get_object()
+        profile_user = self.object
+        form = CommentForm(request.POST)
+        if form.is_valid():
+            comment = form.save(commit=False)
+            comment.author = request.user
+            comment.profile = profile_user
+            comment.save()
+        return redirect('user-profile', pk=profile_user.pk)
+
 
 class ProfileUpdateView(UpdateView):
     model = User
@@ -86,3 +106,12 @@ class ProfileUpdateView(UpdateView):
             raise PermissionDenied("You cannot edit someone else's profile.")
 
         return super().dispatch(request, *args, **kwargs)
+
+class UserStatsView(DetailView):
+    model = User
+    template_name = 'GamePlatformApp/users/user_stats.html'
+    context_object_name = 'profile_user'
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        profile_user = self.get_object()
+        return context

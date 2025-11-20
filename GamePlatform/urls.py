@@ -16,15 +16,22 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from django.contrib.auth.views import LoginView, LogoutView
 from GamePlatformApp.views import *
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', Welcome.as_view(), name="welcome"),
-    path('login', Login.as_view(), name="login"),
-    path('register', Register.as_view(), name="register"),
-    path('register/success', RegisterSuccess.as_view(), name="register_success"),
+    path('', HomeView.as_view(), name="home"),
+    path('login', LoginView.as_view(template_name='GamePlatformApp/login.html'), name="login"),
+    path('logout', LogoutView.as_view(template_name='GamePlatformApp/login.html'), name="logout"),
+    path('register', RegisterView.as_view(), name="register"),
+    path('register/success', RegisterSuccessView.as_view(), name="register_success"),
     path('users/', UserListView.as_view(), name='user-list'),
     path('users/<int:pk>/edit/', UserUpdateView.as_view(), name='user-edit'),
     path('users/<int:pk>/delete/', UserDeleteView.as_view(), name='user-delete'),
-]
+    path('profile/<int:pk>/', UserProfileView.as_view(), name="user-profile"),
+    path('profile/<int:pk>/edit/', ProfileUpdateView.as_view(), name="profile-edit"),
+    path('profile/<int:pk>/stats/', UserStatsView.as_view(), name="user-stats"),
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

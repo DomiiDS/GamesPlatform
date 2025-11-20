@@ -1,0 +1,37 @@
+<style>
+    img{
+        border-radius: 50%;
+        height: 100px;
+        width: 100px;
+    }
+</style>
+<p><a href = "{% url 'home' %}">Home</a></p>
+<img src = "{{ profile_user.profile_picture.url }}"></img>
+<h1>{{ profile_user.username }}</h1>
+{% if request.user == profile_user %}
+<p><a href="{% url 'profile-edit' user.pk %}">Edit profile</a></p>
+{% endif %}
+<p>{{ profile_user.bio }}</p>
+<p>{{ profile_user.created_at }}</p>
+<p>{{ profile_user.updated_at }}</p>
+<a href='{% url 'user-stats' profile_user.pk %}'>View stats</a>
+<h2>Comments</h2>
+{% for c in comments  %}
+    <strong>{{ c.author.username }}</strong> - {{ c.created_at }}
+    <p>{{ c.comment }}</p>
+{% empty %}
+    <p>No comments yet.</p>
+{% endfor %}
+
+<hr>
+
+{% if profile_user.is_authenticated %}
+<h3>Leave a comment</h3>
+<form method="post">
+    {% csrf_token %}
+    {{ form }}
+    <button type="sumbit">Comment</button>
+</form>
+{% else %}
+<p><a href="{% url 'login' %}">Log in</a> to comment.</p>
+{% endif %}

@@ -1,0 +1,15 @@
+<style>
+    img{
+        border-radius: 50%;
+        height: 100px;
+        width: 100px;
+    }
+</style>
+<p><a href = "{% url 'home' %}">Home</a></p>
+<img src = "{{ profile_user.profile_picture.url }}"></img>
+<h1>{{ profile_user.username }}</h1>
+<ul>
+    <li>Blackjack score: x</li>
+    <li>Roulette score: x</li>
+    <li>Horse racing score: x</li>
+</ul>

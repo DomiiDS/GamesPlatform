@@ -1,3 +1,4 @@
+{% extends 'GamePlatformApp/base_navbar.html' %}
 <style>
     img{
         border-radius: 50%;
@@ -5,7 +6,8 @@
         width: 100px;
     }
 </style>
-<p><a href = "{% url 'home' %}">Home</a></p>
+{% block title %}Stats{% endblock %}
+{% block content %}
 <img src = "{{ profile_user.profile_picture.url }}"></img>
 <h1>{{ profile_user.username }}</h1>
 <ul>
@@ -13,3 +15,4 @@
     <li>Roulette score: x</li>
     <li>Horse racing score: x</li>
 </ul>
+{% endblock %}

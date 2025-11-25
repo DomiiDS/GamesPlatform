@@ -1,3 +1,6 @@
+{% extends 'GamePlatformApp/base_navbar.html' %}
+{% block title %}Edit user{% endblock %}
+{% block content %}
 <h1>Edit user</h1>
 <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
@@ -6,3 +9,4 @@
 </form>
 
 <p><a href="{% url 'user-profile' user.pk%}">Back</a></p>
+{% endblock %}

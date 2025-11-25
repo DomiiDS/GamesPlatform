@@ -1,15 +1,39 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Game Platform Pro</title>
-</head>
-<body>
-{% extends 'GamePlatformApp/base.html' %}
+{% extends 'GamePlatformApp/base_navbar.html' %}
+{% block title %}<a href="{% url 'home' %}">Home</a> {% endblock %}
+
 {% block content %}
+{% if user.is_authenticated %}
+<p>Hello, <a href="{% url 'user-profile' user.pk %}">{{ user.username }}</a>!</p>
+<form action="{% url 'logout' %}" method="post">
+    {% csrf_token %}
+    <button type="submit">Log out</button>
+</form>
+{% else %}
+<p><a href="{% url 'register' %}">Register</a>
+    <a href="{% url 'login' %}">Log in</a>
+</p>
+{% endif %}
 
-    <h2>Welcome</h2>
+<p><a href="{% url 'user-list' %}">[TEMPORARY] Manage users</a></p>
 
+<style>
+    img{
+        border-radius: 50%;
+        height: 30px;
+        width: 30px;
+    }
+</style>
+
+<p>Other Users</p>
+<table>
+    {% for u in users %}
+    <tr>
+        <td><img src="{{ u.profile_picture.url }}" alt="{{ u.username }}"></img></td>
+        <td><a href="{% url 'user-profile' u.pk %}">{{ u.username }}</a></td>
+    </tr>
+    {% endfor %}
+</table>
+
+<br><br>
 {% endblock %}
-</body>
-</html>

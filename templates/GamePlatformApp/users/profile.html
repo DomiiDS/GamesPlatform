@@ -5,7 +5,10 @@
         width: 100px;
     }
 </style>
-<p><a href = "{% url 'home' %}">Home</a></p>
+{% extends 'GamePlatformApp/base_navbar.html' %}
+{% block title %}Profile{% endblock %}
+
+{% block content %}
 <img src = "{{ profile_user.profile_picture.url }}"></img>
 <h1>{{ profile_user.username }}</h1>
 {% if request.user == profile_user %}
@@ -35,3 +38,4 @@
 {% else %}
 <p><a href="{% url 'login' %}">Log in</a> to comment.</p>
 {% endif %}
+{% endblock %}

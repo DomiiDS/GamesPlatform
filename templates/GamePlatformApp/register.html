@@ -1,11 +1,7 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
-
+{% extends 'GamePlatformApp/base_navbar.html' %}
+{% block title %}Register{% endblock %}
+{% block content %}
     {% if message %}
         <p style="color: green; font-weight: bold;">{{ message }}</p>
     {% endif %}
@@ -36,6 +32,4 @@
     </form>
     
     <p><a href="{% url 'home' %}">Back</a></p>
-
-</body>
-</html>
+{% endblock %}

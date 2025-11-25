@@ -24,6 +24,10 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', HomeView.as_view(), name="home"),
+    path('games', GamesListView.as_view(), name="games"),
+    path('games/blackjack', GamesListView.as_view(), name="blackjack"),
+    path('games/coin_toss', GamesListView.as_view(), name="coin_toss"),
+    path('games/horse_race', GamesListView.as_view(), name="horse_race"),
     path('login', LoginView.as_view(template_name='GamePlatformApp/login.html'), name="login"),
     path('logout', LogoutView.as_view(template_name='GamePlatformApp/login.html'), name="logout"),
     path('register', RegisterView.as_view(), name="register"),

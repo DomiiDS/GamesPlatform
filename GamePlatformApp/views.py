@@ -115,3 +115,6 @@ class UserStatsView(DetailView):
         context = super().get_context_data(**kwargs)
         profile_user = self.get_object()
         return context
+
+class GamesListView(TemplateView):
+    template_name = 'GamePlatformApp/games.html'

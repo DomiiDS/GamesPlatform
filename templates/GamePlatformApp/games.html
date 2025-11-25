@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+{% extends 'GamePlatformApp/base_navbar.html' %}
+{% load static %}
+{% block title %} Games {% endblock %}
+
+{% block content %}
+{% if user.is_authenticated %}
+    <p>Hello, <a href="{% url 'user-profile' user.pk %}">{{ user.username }}</a>!</p>
+    
+    <form action="{% url 'logout' %}" method="post">
+    {% csrf_token %}
+    <button type="submit">Log out</button>
+    </form>
+    <br>
+    <p>Choose a game</p>
+{% else %}
+    <p><a href="{% url 'register' %}">Register</a>
+    <a href="{% url 'login' %}">Log in</a></p>
+    <br>
+    <p>You need to be logged in to play games</p>
+{% endif %}
+    
+    <style>
+    .game-grid {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+    .game-tile {
+        text-align: center;
+        text-decoration: none;
+        color: inherit;
+    }
+    .game-tile img {
+        border-radius: 10px;
+        width: 150px;
+        height: 150px;
+        object-fit: cover;
+    }
+    .game-tile p {
+        margin-top: 8px;
+        font-size: 1.1rem;
+    }
+    </style>
+
+    <div class="game-grid">
+        <a href="{% url 'blackjack' %}" class="game-tile">
+            <img src="{% static 'blackjack.jpg' %}" alt="Blackjack">
+            <p>Blackjack</p>
+        </a>
+    
+        <a href="{% url 'coin_toss' %}" class="game-tile">
+            <img src="{% static 'coin_toss.jpg' %}" alt="Coin Toss">
+            <p>Coin Toss</p>
+        </a>
+    
+        <a href="{% url 'horse_race' %}" class="game-tile">
+            <img src="{% static 'horse_race.jpg' %}" alt="Horse Race">
+            <p>Horse Race</p>
+        </a>
+    </div>
+
+<br><br>
+{% endblock %}

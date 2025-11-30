@@ -118,3 +118,6 @@ class UserStatsView(DetailView):
 
 class GamesListView(TemplateView):
     template_name = 'GamePlatformApp/games.html'
+
+class BlackjackView(TemplateView):
+    template_name = 'GamePlatformApp/games/blackjack.html'

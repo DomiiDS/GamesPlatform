@@ -1,6 +1,43 @@
 let suits = new Array('club', 'diamond', 'heart', 'spade');
 let ranks = new Array('2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A');
 
+function play(buttonIds) {
+    return new Promise(resolve => {
+        const handlers = {};
+
+        const allButtons = [
+            document.getElementById("hit"),
+            document.getElementById("stand"),
+            document.getElementById("double-down"),
+            document.getElementById("split"),
+            document.getElementById("surrender"),
+            document.getElementById("insurance"),
+            document.getElementById("no-insurance")
+        ];
+
+        for (const button of allButtons) {
+            if (buttonIds.includes(button.id)) {
+                button.disabled = false;
+            } else {
+                button.disabled = true;
+            }
+        }
+
+        buttonIds.forEach(id => {
+            const btn = document.getElementById(id);
+            handlers[id] = () => {
+                buttonIds.forEach(otherId => {
+                    document.getElementById(otherId)
+                        .removeEventListener('click', handlers[otherId]);
+                });
+                resolve(id);
+            };
+
+            btn.addEventListener('click', handlers[id]);
+        });
+    });
+}
+
 class Card {
     constructor(suit, rank) {
         this.suit = suit;
@@ -60,28 +97,16 @@ class Hand {
             return -1;
         }
     }
-    play(buttonIds) {
-        return new Promise(resolve => {
-            const handlers = {};
-
-            buttonIds.forEach(id => {
-                const btn = document.getElementById(id);
-
-                handlers[id] = () => {
-                    buttonIds.forEach(otherId => {
-                        document.getElementById(otherId)
-                            .removeEventListener('click', handlers[otherId]);
-                    });
-                    resolve(id);
-                };
-
-                btn.addEventListener('click', handlers[id]);
-            });
-        });
-    }
     async choose() {
-
-        const choice = await this.play(["hit", "stand", "double-down", "split", "surrender"]);
+        if (this.cards.length == 2 && this.cards[0].rank == this.cards[1].rank && this.player.hands.length == 1) {
+            var choice = await play(["hit", "stand", "double-down", "split", "surrender"]);
+        } else if (this.cards.length == 2 && this.player.hands.length == 1) {
+            var choice = await play(["hit", "stand", "double-down", "surrender"]);
+        } else if (this.cards.length == 2) {
+            var choice = await play(["hit", "stand", "double-down"]);
+        } else {
+            var choice = await play(["hit", "stand"]);
+        }
 
         switch (choice) {
             case "hit":
@@ -163,6 +188,7 @@ class Player {
     constructor(deck, chips, stake) {
         this.hands = new Array(new Hand(deck, this, stake));
         this.chips = chips - stake;
+        this.insurance_turn = false;
     }
     split(hand) {
         let hand1 = new Hand(hand.deck, this, hand.stake);
@@ -184,6 +210,23 @@ class Player {
 
         this.hands[0] = hand1;
         this.hands[1] = hand2;
+        console.log(this.hands[0].value);
+        for (let k = 0; k < this.hands[0].cards.length; k++) {
+            console.log(this.hands[0].cards[k].suit + " " + this.hands[0].cards[k].rank);
+        }
+        console.log(this.hands[1].value);
+        for (let k = 0; k < this.hands[1].cards.length; k++) {
+            console.log(this.hands[1].cards[k].suit + " " + this.hands[1].cards[k].rank);
+        }
+    }
+    async insurance_bet() {
+        var choice = await play(["insurance", "no-insurance"]);
+        if (choice == "insurance") {
+            this.chips = this.chips - Math.floor(this.hands[0].stake / 2);
+            return Math.floor(this.hands[0].stake / 2);
+        } else if (choice == "no-insurance") {
+            return 0;
+        }
     }
 }
 
@@ -218,10 +261,13 @@ class Game {
         }
     }
     async begin() {
+        for (let i = 1; i < this.players.length; i++) {
+            console.log(this.players[i].chips);
+        }
         for (let i = 0; i < this.players.length; i++) {
             for (let j = 0; j < this.players[i].hands.length; j++) {
                 this.results[i][j] = this.players[i].hands[j].get_starting_cards();
-                console.log(this.results[i][j]);
+                console.log("player " + i + " hand " + j);
                 if (i != 0 && j != 1) {
                     for (let k = 0; k < this.players[i].hands[j].cards.length; k++) {
                         console.log(this.players[i].hands[j].cards[k].suit + " " + this.players[i].hands[j].cards[k].rank);
@@ -230,6 +276,18 @@ class Game {
                     for (let k = 0; k < this.players[i].hands[j].cards.length - 1; k++) {
                         console.log(this.players[i].hands[j].cards[k].suit + " " + this.players[i].hands[j].cards[k].rank);
                     }
+                }
+            }
+        }
+        if (['10', 'J', 'Q', 'K', 'A'].includes(this.players[0].hands[0].cards[0].rank)) {
+            let bets = new Array();
+            for (let i = 1; i < this.players.length; i++) {
+                bets[i - 1] = await this.players[i].insurance_bet();
+            }
+            if (this.players[0].hands[0].value == 22) {
+                for (let i = 1; i < this.players.length; i++) {
+                    this.players[i].chips = this.players[i].chips + bets[i - 1] * 2;
+                    bets[i - 1] = 0;
                 }
             }
         }
@@ -243,10 +301,10 @@ class Game {
                             this.results[i].push(-1);
                         }
                     }
-                }
-                console.log(this.results[i][j]);
-                for (let k = 0; k < this.players[i].hands[j].cards.length; k++) {
-                    console.log(this.players[i].hands[j].cards[k].suit + " " + this.players[i].hands[j].cards[k].rank);
+                    console.log("player " + i + " hand " + j);
+                    for (let k = 0; k < this.players[i].hands[j].cards.length; k++) {
+                        console.log(this.players[i].hands[j].cards[k].suit + " " + this.players[i].hands[j].cards[k].rank);
+                    }
                 }
             }
         }
@@ -254,10 +312,27 @@ class Game {
             while (this.results[0][j] == -1) {
                 this.results[0][j] = await this.players[0].hands[j].choose();
             }
-            console.log(this.results[0][j]);
+            console.log("player 0 hand " + j);
             for (let k = 0; k < this.players[0].hands[j].cards.length; k++) {
                 console.log(this.players[0].hands[j].cards[k].suit + " " + this.players[0].hands[j].cards[k].rank);
             }
+        }
+        for (let i = 1; i < this.players.length; i++) {
+            for (let j = 0; j < this.players[i].hands.length; j++) {
+                if (this.players[i].hands[j].value != 0) {
+                    if (this.players[i].hands[j].value == this.players[0].hands[0].value) {
+                        this.players[i].chips = this.players[i].chips + this.players[i].hands[j].stake;
+                        this.players[i].hands[j].stake = 0;
+                    } else if (this.players[i].hands[j].value == 22) { 
+                        this.players[i].chips = this.players[i].chips + 3 * this.players[i].hands[j].stake;
+                        this.players[i].hands[j].stake = 0;
+                    } else if (this.players[i].hands[j].value > this.players[0].hands[0].value) {
+                        this.players[i].chips = this.players[i].chips + 2 * this.players[i].hands[j].stake;
+                        this.players[i].hands[j].stake = 0;
+                    }
+                }
+            }
+            console.log(this.players[i].chips);
         }
     }
 }

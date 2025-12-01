@@ -291,30 +291,32 @@ class Game {
                 }
             }
         }
-        for (let i = 1; i < this.players.length; i++) {
-            for (let j = 0; j < this.players[i].hands.length; j++) {
-                while (this.results[i][j] == -1) {
-                    this.results[i][j] = await this.players[i].hands[j].choose();
-                    if (this.players[i].hands.length > this.results[i].length) {
-                        const diff = this.players[i].hands.length - this.results[i].length;
-                        for (let k = 0; k < diff; k++) {
-                            this.results[i].push(-1);
+        if (this.results[0][0] != 22) {
+            for (let i = 1; i < this.players.length; i++) {
+                for (let j = 0; j < this.players[i].hands.length; j++) {
+                    while (this.results[i][j] == -1) {
+                        this.results[i][j] = await this.players[i].hands[j].choose();
+                        if (this.players[i].hands.length > this.results[i].length) {
+                            const diff = this.players[i].hands.length - this.results[i].length;
+                            for (let k = 0; k < diff; k++) {
+                                this.results[i].push(-1);
+                            }
                         }
-                    }
-                    console.log("player " + i + " hand " + j);
-                    for (let k = 0; k < this.players[i].hands[j].cards.length; k++) {
-                        console.log(this.players[i].hands[j].cards[k].suit + " " + this.players[i].hands[j].cards[k].rank);
+                        console.log("player " + i + " hand " + j);
+                        for (let k = 0; k < this.players[i].hands[j].cards.length; k++) {
+                            console.log(this.players[i].hands[j].cards[k].suit + " " + this.players[i].hands[j].cards[k].rank);
+                        }
                     }
                 }
             }
-        }
-        for (let j = 0; j < this.players[0].hands.length; j++) {
-            while (this.results[0][j] == -1) {
-                this.results[0][j] = await this.players[0].hands[j].choose();
-            }
-            console.log("player 0 hand " + j);
-            for (let k = 0; k < this.players[0].hands[j].cards.length; k++) {
-                console.log(this.players[0].hands[j].cards[k].suit + " " + this.players[0].hands[j].cards[k].rank);
+            for (let j = 0; j < this.players[0].hands.length; j++) {
+                while (this.results[0][j] == -1) {
+                    this.results[0][j] = await this.players[0].hands[j].choose();
+                }
+                console.log("player 0 hand " + j);
+                for (let k = 0; k < this.players[0].hands[j].cards.length; k++) {
+                    console.log(this.players[0].hands[j].cards[k].suit + " " + this.players[0].hands[j].cards[k].rank);
+                }
             }
         }
         for (let i = 1; i < this.players.length; i++) {
@@ -323,7 +325,7 @@ class Game {
                     if (this.players[i].hands[j].value == this.players[0].hands[0].value) {
                         this.players[i].chips = this.players[i].chips + this.players[i].hands[j].stake;
                         this.players[i].hands[j].stake = 0;
-                    } else if (this.players[i].hands[j].value == 22) { 
+                    } else if (this.players[i].hands[j].value == 22) {
                         this.players[i].chips = this.players[i].chips + 3 * this.players[i].hands[j].stake;
                         this.players[i].hands[j].stake = 0;
                     } else if (this.players[i].hands[j].value > this.players[0].hands[0].value) {

@@ -278,7 +278,7 @@ class Game {
         this.deck.shuffle();
         this.players = new Array(new Dealer(this.deck, Infinity, 100));
         for (let i = 1; i < number + 1; i++) {
-            this.players.push(new Player(this.deck, 10000, 100));
+            this.players.push(new Player(this.deck, PLAYER_CHIPS, 100));
         }
         this.results = new Array();
         for (let i = 0; i < this.players.length; i++) {

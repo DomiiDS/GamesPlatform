@@ -1,6 +1,31 @@
 let suits = new Array('club', 'diamond', 'heart', 'spade');
 let ranks = new Array('2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A');
 
+async function sendChips(finalChips){
+    const url = '/update-chips/';
+    document.querySelector('p:first-child').textContent = `Twoje żetony: ${finalChips}`;
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                chips: finalChips
+            })
+        });
+        const data = await response.json();
+        if (data.success) {
+            console.log('Zetony zaktualizowane:', data.chips);
+        } else {
+            console.error('Blad', data.error);
+        }
+    }
+    catch (error){
+        console.error('Blad fetch', error)
+        }
+}
+
 function play(buttonIds) {
     return new Promise(resolve => {
         const handlers = {};
@@ -335,6 +360,7 @@ class Game {
                 }
             }
             console.log(this.players[i].chips);
+            sendChips(this.players[i].chips)
         }
     }
 }

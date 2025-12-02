@@ -2,8 +2,8 @@
 {% extends 'GamePlatformApp/base_navbar.html' %}
 {% load static %}
 {% block title %} Blackjack {% endblock %}
-
 {% block content %}
+<p>Twoje żetony: {{ chips }} </p>
 <button id="hit">Hit</button>
 <button id="stand">Stand</button>
 <button id="double-down">Double down</button>

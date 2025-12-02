@@ -1,9 +1,13 @@
+from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import TemplateView, ListView, UpdateView, View, DetailView
 from django.urls import reverse_lazy, reverse
 from .models import User, Comment
 from .forms import UserForm, ProfileForm, CommentForm
 from django.core.exceptions import PermissionDenied
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+import json
 
 class HomeView(ListView):
     model = User
@@ -121,3 +125,27 @@ class GamesListView(TemplateView):
 
 class BlackjackView(TemplateView):
     template_name = 'GamePlatformApp/games/blackjack.html'
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+        context['chips'] = user.chips
+        return context
+
+@method_decorator(csrf_exempt, name='dispatch')
+class UpdateChipsView(View):
+    def post(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return JsonResponse({'success': False, 'error': 'You must login to update chips!'}, status=401)
+        try:
+            data = json.loads(request.body)
+            new_chips = int(data.get('chips'))
+        except (json.JSONDecodeError, ValueError, TypeError) as e:
+            return JsonResponse({'success': False, 'error': str(e)}, status=400)
+
+        try:
+            user = request.user
+            user.chips = new_chips
+            user.save()
+            return JsonResponse({'success': True, 'chips': new_chips}, status=200)
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)}, status=400)

@@ -7,6 +7,7 @@ class User(AbstractUser):
     bio = models.CharField(max_length=250, default='A GamePlatform user')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    chips = models.IntegerField(default=1000)
 
 class Comment(models.Model):
     comment = models.TextField()

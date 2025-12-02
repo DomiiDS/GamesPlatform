@@ -184,6 +184,7 @@ class Hand {
     }
     double_down() {
         this.player.chips = this.player.chips - this.stake;
+        sendChips(this.player.chips)
         this.stake = this.stake * 2;
         let card = this.deck.pop();
         let new_val = this.value + this.get_card_value(card);
@@ -199,11 +200,13 @@ class Hand {
     }
     split() {
         this.player.chips = this.player.chips + this.stake;
+        sendChips(this.player.chips)
         this.player.split(this);
         return -1;
     }
     surrender() {
         this.player.chips = this.player.chips + Math.floor(this.stake / 2);
+        sendChips(this.player.chips)
         this.stake = Math.ceil(this.stake / 2);
         return this.resolve();
     }
@@ -248,6 +251,7 @@ class Player {
         var choice = await play(["insurance", "no-insurance"]);
         if (choice == "insurance") {
             this.chips = this.chips - Math.floor(this.hands[0].stake / 2);
+            sendChips(this.chips);
             return Math.floor(this.hands[0].stake / 2);
         } else if (choice == "no-insurance") {
             return 0;
@@ -279,6 +283,7 @@ class Game {
         this.players = new Array(new Dealer(this.deck, Infinity, 100));
         for (let i = 1; i < number + 1; i++) {
             this.players.push(new Player(this.deck, PLAYER_CHIPS, 100));
+            sendChips(this.players[i].chips)
         }
         this.results = new Array();
         for (let i = 0; i < this.players.length; i++) {

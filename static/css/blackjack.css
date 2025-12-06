@@ -104,7 +104,12 @@ button:active {
     background-color: #3498db;
 }
 
-
+button:disabled, #hit:disabled, #stand:disabled, #double-down:disabled, #split:disabled, #surrender:disabled {
+    background-color: #000;
+    border: 2px solid #222;
+    color: #4a4a4a;
+    box-shadow: 0 4px #222;
+}
 
 #insurance-ask {
     font-size: 1.3em;
@@ -121,4 +126,9 @@ button:active {
     justify-content: center;
     flex-wrap: wrap;
     margin-top: 20px;
+}
+
+.card {
+    width: 125px;
+    height: auto;
 }

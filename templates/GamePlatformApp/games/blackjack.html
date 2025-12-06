@@ -8,7 +8,8 @@
 
 </head>
 <body>
-    <p>Twoje żetony: {{ chips }} </p>
+    <div id="players-container"></div>
+    <p id="tokens">Twoje żetony: {{ chips }} </p>
     <button id="hit">Hit</button>
     <button id="stand">Stand</button>
     <button id="double-down">Double down</button>
@@ -17,10 +18,13 @@
     <p id="insurance-ask">Bet Insurance?</p>
     <button id="insurance">Bet Insurance</button>
     <button id="no-insurance">Don't</button>
+    <div id="turn"></div>
 
     <script>
         const PLAYER_CHIPS = {{ chips }};
     </script>
-    <script src="{% static 'js/blackjack.js' %}"></script>
+    <script src="{% static 'js/blackjack.js' %}">
+        var static_dir = {% static 'cards' %};
+    </script>
 </body>
 </html>

@@ -341,7 +341,6 @@ class Game {
         this.players = new Array(new Dealer(this.deck, Infinity, 100));
         for (let i = 1; i < number + 1; i++) {
             this.players.push(new Player(this.deck, PLAYER_CHIPS, 100));
-            sendChips(this.players[i].chips)
         }
         this.results = new Array();
         for (let i = 0; i < this.players.length; i++) {
@@ -378,7 +377,7 @@ class Game {
                 for (let i = 0; i < this.players.length; i++) {
                     displayPlayerHands(this, i);
                 }
-                sendChips(this.players[i].chips)
+                await sendChips(this.players[i].chips)
             }
             if (this.players[0].hands[0].value == 22) {
                 for (let i = 1; i < this.players.length; i++) {
@@ -389,7 +388,7 @@ class Game {
                     for (let i = 0; i < this.players.length; i++) {
                         displayPlayerHands(this, i);
                     }
-                    sendChips(this.players[i].chips)
+                    await sendChips(this.players[i].chips)
                 }
             }
         }
@@ -404,7 +403,7 @@ class Game {
                         for (let i = 0; i < this.players.length; i++) {
                             displayPlayerHands(this, i);
                         }
-                        sendChips(this.players[i].chips)
+                        await sendChips(this.players[i].chips)
                         if (this.players[i].hands.length > this.results[i].length) {
                             const diff = this.players[i].hands.length - this.results[i].length;
                             for (let k = 0; k < diff; k++) {
@@ -451,7 +450,7 @@ class Game {
                 }
             }
             console.log(this.players[i].chips);
-            if (i != 0) { sendChips(this.players[i].chips) }
+            if (i != 0) { await sendChips(this.players[i].chips) }
         }
         this.createPlayerAreas();
 

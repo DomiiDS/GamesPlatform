@@ -2,7 +2,7 @@ from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import TemplateView, ListView, UpdateView, View, DetailView
 from django.urls import reverse_lazy, reverse
-from .models import User, Comment
+from .models import User, Comment, Race, Horse
 from .forms import UserForm, ProfileForm, CommentForm
 from django.core.exceptions import PermissionDenied
 from django.views.decorators.csrf import csrf_exempt
@@ -149,3 +149,13 @@ class UpdateChipsView(View):
             return JsonResponse({'success': True, 'chips': new_chips}, status=200)
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)}, status=400)
+
+def start_race(request):
+    race = Race.get_singleton()
+    race.horses.set(Horse.objects.all())
+    race.run_race()
+    return redirect('race-room')
+
+def race_room(request):
+    race = Race.get_singleton()
+    return render(request, 'GamePlatformApp/games/racing_room.html', {"race": race})

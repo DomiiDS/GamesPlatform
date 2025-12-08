@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+import random
 
 
 class User(AbstractUser):
@@ -18,3 +19,27 @@ class Comment(models.Model):
     profile = models.ForeignKey(User,
                                 on_delete=models.CASCADE,
                                 related_name='comments_received')
+
+class Horse(models.Model):
+    name = models.CharField(max_length=50)
+    speed = models.FloatField(default=1.0)
+    def __str__(self):
+        return self.name
+
+class Race(models.Model):
+    horses = models.ManyToManyField(Horse, related_name='race_participants')
+    winner = models.ForeignKey(Horse, null=True, blank=True, on_delete=models.CASCADE, related_name='race_winner')
+
+    @classmethod
+    def get_singleton(cls):
+        obj, created = cls.objects.get_or_create(pk=1)
+        return obj
+
+    def run_race(self):
+        horses = list(self.horses.all())
+        chances = [h.speed for h in horses]
+        self.winner = random.choices(horses, weights=chances)[0]
+        self.save()
+
+class Bet(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)

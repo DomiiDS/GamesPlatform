@@ -39,4 +39,6 @@ urlpatterns = [
     path('profile/<int:pk>/edit/', ProfileUpdateView.as_view(), name="profile-edit"),
     path('profile/<int:pk>/stats/', UserStatsView.as_view(), name="user-stats"),
     path('update-chips/', UpdateChipsView.as_view(), name="update-chips"),
+    path('race/', race_room, name="race-room"),
+    path('race/start', start_race, name="start-race"),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+{% load static %}
+<style>
+    #race-track {
+        width: 800px;
+        margin: 50px auto;
+        border: 2px solid #333;
+        padding: 10px;
+        background: #eee;
+    }
+     .lane {
+        position: relative;
+        height: 60px;
+        margin: 20px 0;
+        border-bottom: 1px solid #999;
+    }
+
+    .horse-name {
+        position: absolute;
+        top: -20px;
+        left: 0;
+        font-weight: bold;
+    }
+
+    .horse {
+        width: 50px;
+        height: auto;
+        position: absolute;
+        left: 0;
+        top: 0;
+    }
+
+    #winner {
+        margin-top: 20px;
+        font-size: 24px;
+        font-weight: bold;
+        color: green;
+    }
+</style>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Horse racing</title>
+</head>
+<body>
+<h1>Wynik wyścigu</h1>
+
+{% if race.winner %}
+  <p>Zwycięzca: <strong>{{ race.winner }}</strong></p>
+{% else %}
+  <p>Wyścig jeszcze nie wystartował.</p>
+{% endif %}
+
+<h2>Uczestnicy:</h2>
+<ul>
+{% for horse in race.horses.all %}
+  <li>{{ horse.name }} (speed: {{ horse.speed }})</li>
+{% endfor %}
+</ul>
+
+<button id="start">Rozpocznij wyścig</button>
+<div id="winner"></div>
+
+<div id="race-track">
+    {% for horse in race.horses.all %}
+    <div class="lane">
+        <div class="horse-name">{{ horse.name }}</div>
+        <img class="horse" src="{% static 'horse.png' %}" data-speed="{{ horse.speed }}" alt="{{ horse.name }}">
+    </div>
+    {% endfor %}
+</div>
+
+<script>
+    const horses = document.querySelectorAll('.horse');
+    const trackWidth = document.getElementById('race-track').offsetWidth - 50;
+    const winnerDiv = document.getElementById('winner');
+    const start = document.getElementById('start');
+
+    start.addEventListener('click', () => {
+        horses.forEach(horse => horse.style.left = '0px');
+        winnerDiv.textContent = '';
+        let finished = false;
+        let winnerHorse = null;
+        function move() {
+            horses.forEach(horse => {
+                const current = parseFloat(horse.style.left || 0);
+                const speed = parseFloat(horse.dataset.speed) * 0.5 + Math.random();
+                const next = current + speed
+                horse.style.left = Math.min(next, trackWidth) + 'px';
+                if (next >= trackWidth && !finished) {
+                    finished = true;
+                    winnerHorse = horse;
+                }
+            });
+            if (!finished) {
+                requestAnimationFrame(move)
+            }
+            else {
+                winnerDiv.textContent = winnerHorse.previousElementSibling.textContent + " wygrał!"
+            }
+        }
+
+        move();
+    })
+
+</script>
+</body>
+</html>

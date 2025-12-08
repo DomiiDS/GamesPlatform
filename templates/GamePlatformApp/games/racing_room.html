@@ -45,12 +45,6 @@
 <body>
 <h1>Wynik wyścigu</h1>
 
-{% if race.winner %}
-  <p>Zwycięzca: <strong>{{ race.winner }}</strong></p>
-{% else %}
-  <p>Wyścig jeszcze nie wystartował.</p>
-{% endif %}
-
 <h2>Uczestnicy:</h2>
 <ul>
 {% for horse in race.horses.all %}

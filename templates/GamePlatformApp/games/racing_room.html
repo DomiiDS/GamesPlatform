@@ -30,6 +30,34 @@
         top: 0;
     }
 
+    .horse-normal {
+        filter: none;
+    }
+
+    .horse-sepia {
+        filter: sepia(100%);
+    }
+
+    .horse-invert {
+        filter: invert(100%);
+    }
+
+    .horse-blue {
+        filter: hue-rotate(200deg);
+    }
+
+    .horse-red {
+        filter: hue-rotate(10deg);
+    }
+
+    .horse-pink {
+        filter: hue-rotate(300deg);
+    }
+
+    .horse-green {
+        filter: hue-rotate(120deg);
+    }
+
     #winner {
         margin-top: 20px;
         font-size: 24px;
@@ -43,6 +71,9 @@
     <title>Horse racing</title>
 </head>
 <body>
+
+<button id="new-race">Nowy wyścig</button>
+
 <h1>Wynik wyścigu</h1>
 
 <h2>Uczestnicy:</h2>
@@ -52,14 +83,50 @@
 {% endfor %}
 </ul>
 
+<div style="padding: 10px; background: #ddd; width: 200px; border: 1px solid #aaa;">
+    Chipsy: <strong>{{ chips }}</strong>
+</div>
+
+<h2>Obstaw</h2>
+
+<form action="{% url 'place-bet' %}" method="POST" id="bet-form">
+    {% csrf_token %}
+    <label>Koń:</label>
+    <select name="horse_id">
+        {% for horse in race.horses.all %}
+            <option value="{{ horse.id }}">{{ horse.name }}</option>
+        {% endfor %}
+    </select>
+
+    <label>Kwota (chips):</label>
+    <input type="number" name="amount" min="1" required>
+
+    <button type="submit">Obstaw</button>
+</form>
+
 <button id="start">Rozpocznij wyścig</button>
+
+<h2>Twoje ostatnie zakłady:</h2>
+<ul>
+    {% for bet in bets %}
+        <li>
+            {{ bet.horse }}:
+            {% if bet.won %}
+                wygrana +{{ bet.amount }} chips
+            {% else %}
+                przegrana -{{ bet.amount }}
+            {% endif %}
+        </li>
+    {% endfor %}
+</ul>
+
 <div id="winner"></div>
 
 <div id="race-track">
     {% for horse in race.horses.all %}
     <div class="lane">
         <div class="horse-name">{{ horse.name }}</div>
-        <img class="horse" src="{% static 'horse.png' %}" data-speed="{{ horse.speed }}" alt="{{ horse.name }}">
+        <img class="horse horse-{{ horse.color }}" src="{% static 'horse.png' %}" data-speed="{{ horse.speed }}" alt="{{ horse.name }}">
     </div>
     {% endfor %}
 </div>
@@ -69,8 +136,13 @@
     const trackWidth = document.getElementById('race-track').offsetWidth - 50;
     const winnerDiv = document.getElementById('winner');
     const start = document.getElementById('start');
+    const betForm = document.getElementById('bet-form');
+    const newRace = document.getElementById('new-race');
 
     start.addEventListener('click', () => {
+        start.disabled = true;
+        newRace.disabled = true;
+        betForm.querySelectorAll("input, select, button").forEach(el => el.disabled = true);
         horses.forEach(horse => horse.style.left = '0px');
         winnerDiv.textContent = '';
         let finished = false;
@@ -90,12 +162,33 @@
                 requestAnimationFrame(move)
             }
             else {
-                winnerDiv.textContent = winnerHorse.previousElementSibling.textContent + " wygrał!"
+                const winnerName = winnerHorse.previousElementSibling.textContent;
+                winnerDiv.textContent = winnerName + " wygrał!";
+
+                fetch("{% url 'set-winner' %}", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": "{{ csrf_token }}",
+                    },
+                    body: JSON.stringify({ winner_name: winnerName })
+                })
+                .then(res => res.json())
+                .then(data => console.log("Winner saved:", data))
+                .catch(err => console.error(err))
+                .finally(() => {
+                    newRace.disabled = false;
+                });
             }
+
         }
 
         move();
     })
+
+    newRace.addEventListener("click", () => {
+        window.location.href = "{% url 'start-race' %}";
+    });
 
 </script>
 </body>

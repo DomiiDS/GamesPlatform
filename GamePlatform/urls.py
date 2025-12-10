@@ -41,4 +41,8 @@ urlpatterns = [
     path('update-chips/', UpdateChipsView.as_view(), name="update-chips"),
     path('race/', race_room, name="race-room"),
     path('race/start', start_race, name="start-race"),
+    path("race/bet/", place_bet, name="place-bet"),
+    path("race/set-winner/", set_winner, name="set-winner"),
+    path("add-horse/", add_horse, name="add-horse"),
+
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

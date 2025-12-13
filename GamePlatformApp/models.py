@@ -51,3 +51,41 @@ class Bet(models.Model):
 
     def __str__(self):
         return f"{self.user.username} -> {self.horse.name} ({self.amount} chips)"
+
+class RouletteField(models.Model):
+    num = models.IntegerField(default=0)
+    color = models.CharField(max_length=10, default="green")
+    won = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.num} - {self.color}"
+
+class RouletteWheel(models.Model):
+    fields = models.ManyToManyField(RouletteField, related_name='wheel_fields')
+
+    @classmethod
+    def get_singleton(cls):
+        obj, created = cls.objects.get_or_create(pk=1)
+        return obj
+    
+    def spin(self):
+        fields = list(self.fields.all())
+        if not fields:
+            raise RuntimeError("Roulette wheel has no fields attached")
+        winning_field = random.choice(fields)
+        winning_field.won = True
+        winning_field.save()
+        return winning_field
+
+class RouletteBet(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    fields = models.ManyToManyField(RouletteField, related_name='user_fields')
+    amount = models.IntegerField(default=0)
+    bet_type = models.IntegerField(default=1)
+
+    def resolve(self):
+        fields = list(self.fields.all())
+        if any([field.won for field in fields]):
+            return self.amount + self.bet_type * self.amount
+        else:
+            return 0

@@ -1,11 +1,11 @@
 from django.http import JsonResponse
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, redirect, get_object_or_404, get_list_or_404
 from django.views.generic import TemplateView, ListView, UpdateView, View, DetailView
 from django.urls import reverse_lazy, reverse
 from matplotlib.style.core import available
 
-from .models import User, Comment, Race, Horse, Bet
-from .forms import UserForm, ProfileForm, CommentForm
+from .models import User, Comment, Race, Horse, Bet, RouletteField, RouletteWheel, RouletteBet
+from .forms import UserForm, ProfileForm, CommentForm, RoulettePickForm
 from django.core.exceptions import PermissionDenied
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
@@ -125,6 +125,105 @@ class UserStatsView(DetailView):
 class GamesListView(TemplateView):
     template_name = 'GamePlatformApp/games.html'
 
+class RouletteView(TemplateView):
+    template_name = 'GamePlatformApp/games/roulette.html'
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+        context['chips'] = user.chips
+        context['user'] = user
+        context['wheel'] = RouletteWheel.get_singleton()
+        context['form'] = RoulettePickForm()
+        wheel = RouletteWheel.get_singleton()
+        last_win = wheel.fields.filter(won=True).first()
+        context['winning_field'] = last_win
+        return context
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_anonymous:
+            raise PermissionDenied("Log in to play games.")
+
+        return super().dispatch(request, *args, **kwargs)
+
+def start_roulette(request):
+    if request.user.is_anonymous:
+            raise PermissionDenied("Log in to play games.")
+
+    wheel = RouletteWheel.get_singleton()
+
+    fields = list(RouletteField.objects.all())
+    if len(fields) < 37:
+        red_numbers = {
+            1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36
+        }
+
+        fields = []
+        for i in range(37):
+            if i == 0:
+                color = "green"
+            elif i in red_numbers:
+                color = "red"
+            else:
+                color = "black"
+
+            fields.append(RouletteField(num=i, color=color))
+            RouletteField.objects.create(RouletteField(num=i, color=color))
+
+    RouletteField.objects.update(won=False)
+
+    wheel.fields.set(fields)
+
+    return redirect('roulette')
+
+def roulette_resolve(request):
+    wheel = RouletteWheel.get_singleton()
+
+    winning_field = wheel.spin()
+
+    bets = RouletteBet.objects.select_related("user").prefetch_related("fields")
+
+    for bet in bets:
+        payout = bet.resolve()
+        if payout > 0:
+            bet.user.chips += payout
+            bet.user.save()
+
+    bets.delete()  # clear bets after round
+
+    return render(request, "GamePlatformApp/games/roulette.html", {
+        "winning_field": winning_field,
+        "chips": request.user.chips,
+        "user": request.user,
+    })
+
+def roulette_bet(request):
+    if request.method == "POST":
+        field_ids = request.POST.getlist("fields")
+        amount = int(request.POST.get("amount"))
+        bet_type = int(request.POST.get("bet_type", 1))
+
+        user = request.user
+        fields = RouletteField.objects.filter(id__in=field_ids)
+
+        if not fields.exists():
+            return JsonResponse({"error": "No fields selected"}, status=400)
+
+        if user.chips < amount:
+            return JsonResponse({"error": "Za mało chipsów!"}, status=400)
+
+        user.chips -= amount
+        user.save()
+
+        bet = RouletteBet.objects.create(
+            user=user,
+            amount=amount,
+            bet_type=bet_type
+        )
+        bet.fields.set(fields)
+
+        return redirect("roulette")
+
+    return redirect("roulette")
+
 class BlackjackView(TemplateView):
     template_name = 'GamePlatformApp/games/blackjack.html'
     def get_context_data(self, **kwargs):
@@ -132,6 +231,11 @@ class BlackjackView(TemplateView):
         user = self.request.user
         context['chips'] = user.chips
         return context
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_anonymous:
+            raise PermissionDenied("Log in to play games.")
+
+        return super().dispatch(request, *args, **kwargs)
 
 @method_decorator(csrf_exempt, name='dispatch')
 class UpdateChipsView(View):
@@ -178,6 +282,9 @@ def add_horse(request):
 
 
 def start_race(request):
+    if request.user.is_anonymous:
+            raise PermissionDenied("Log in to play games.")
+
     race = Race.get_singleton()
 
     all_horses = list(Horse.objects.all())

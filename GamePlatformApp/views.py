@@ -2,6 +2,7 @@ from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404, get_list_or_404
 from django.views.generic import TemplateView, ListView, UpdateView, View, DetailView
 from django.urls import reverse_lazy, reverse
+from django.views.decorators.http import require_POST
 from matplotlib.style.core import available
 
 from .models import User, Comment, Race, Horse, Bet, RouletteField, RouletteWheel, RouletteBet
@@ -126,7 +127,7 @@ class GamesListView(TemplateView):
     template_name = 'GamePlatformApp/games.html'
 
 class RouletteView(TemplateView):
-    template_name = 'GamePlatformApp/games/roulette.html'
+    template_name = 'GamePlatformApp/games/roulette_js.html'
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user = self.request.user
@@ -223,6 +224,25 @@ def roulette_bet(request):
         return redirect("roulette")
 
     return redirect("roulette")
+
+@require_POST
+def roulette_ajax(request):
+    if request.user.is_anonymous:
+        raise PermissionDenied("Log in to play games.")
+    wheel = RouletteWheel.get_singleton()
+    winning_field = wheel.spin()
+    bets = RouletteBet.objects.select_related("user")
+    for bet in bets:
+        payout = bet.resolve()
+        if payout > 0:
+            bet.user.chips += payout
+            bet.user.save()
+    bets.delete()
+    return JsonResponse({"winning_number": winning_field.num,
+                        "winning_color": winning_field.color,
+                         "user_chips": request.user.chips,
+                         })
+
 
 class BlackjackView(TemplateView):
     template_name = 'GamePlatformApp/games/blackjack.html'

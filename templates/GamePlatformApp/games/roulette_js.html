@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Roulette</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/roulette.css' %}">
+</head>
+<body>
+<!-- generowanie ruletki z django -->
+<div id="roulette-container">
+    <div id="roulette-wheel">
+        {% for field in wheel.fields.all %}
+            <div class="roulette-field {{ field.color }}" data-number="{{ field.num }}">
+                {{ field.num }}
+            </div>
+        {% endfor %}
+    </div>
+</div>
+<button id="spin">Spin</button>
+<p style="color:white">Chips: <span id="chips-count">{{ user.chips }}</span></p>
+<script>
+    <!-- zaznaczanie pól -->
+    const fields = document.querySelectorAll('.roulette-field');
+    let selectedFields = [];
+    fields.forEach(field => {
+        field.addEventListener('click', () => {
+            field.classList.toggle('selected');
+            const number = field.dataset.number;
+            if (selectedFields.includes(number)) {
+                selectedFields = selectedFields.filter(n => n !== number);
+            }
+            else {
+                selectedFields.push(number)
+            }
+        });
+    });
+    <!-- krecenie -->
+    document.getElementById('spin').addEventListener('click', () => {
+        fetch("{% url 'roulette-ajax' %}", {
+            method: 'POST',
+            headers:
+                {
+                    "X-CSRFToken": "{{ csrf_token }}",
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({})
+        })
+        .then(response => response.json())
+        .then(data => {
+        const winningFieldNumber = data.winning_number;
+        const fieldsArr = [...document.querySelectorAll('.roulette-field')]
+        let i = 0;
+        let speed = 50;
+        const loops = 3;
+        const winningIndex = fieldsArr.findIndex(f => f.dataset.number == winningFieldNumber);
+        const steps = loops * fieldsArr.length + winningIndex;
+
+    function animatedSpinning() {
+        fieldsArr.forEach(f => f.classList.remove('active'));
+        const index = i % fieldsArr.length;
+        fieldsArr[index].classList.add('active');
+        i++;
+        if (i <= steps) {
+            let t = i / steps
+            let delay = speed + Math.pow(t, 2) * 300;
+            setTimeout(animatedSpinning, delay);
+        }
+        else {
+            fieldsArr.forEach(f => f.classList.remove('active'));
+            fieldsArr[winningIndex].classList.add('active')
+            document.getElementById('chips-count').innerText = data.user_chips
+        }
+    }
+    animatedSpinning();
+    });
+    });
+</script>
+</body>
+</html>

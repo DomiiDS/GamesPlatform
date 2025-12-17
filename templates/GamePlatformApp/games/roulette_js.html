@@ -77,14 +77,9 @@ placeBetBtn.addEventListener("click", () => {
     let selectedFields = [];
     fields.forEach(field => {
         field.addEventListener('click', () => {
+            fields.forEach(f => f.classList.remove(('selected')));
             field.classList.toggle('selected');
-            const number = field.dataset.id;
-            if (selectedFields.includes(number)) {
-                selectedFields = selectedFields.filter(n => n !== number);
-            }
-            else {
-                selectedFields.push(number)
-            }
+            selectedFields = [field.dataset.id];
         });
     });
     <!-- krecenie -->

@@ -4,25 +4,22 @@
     <meta charset="UTF-8">
     <title>Roulette</title>
     {% load static %}
-    <link rel="stylesheet" href="{% static 'css/roulette.css' %}">
+    <link rel="stylesheet" href="{% static 'css/roulette2.css' %}">
 </head>
 <body>
 <!-- generowanie ruletki z django -->
 <div id="roulette-container">
     <div id="roulette-wheel">
         {% for field in wheel.fields.all %}
-            <div class="roulette-field {{ field.color }}" data-number="{{ field.num }}">
-                {{ field.num }}
-            </div>
+        <div class="roulette-field {{ field.color }}" data-id="{{ field.id }}" data-number="{{ field.num }}">
+            {{ field.num }}
+        </div>
         {% endfor %}
     </div>
 </div>
 <div id="bet-panel">
     <label>Bet Amount:</label>
     <input type="number" id="bet-amount" min="1" required>
-
-    <label>Bet Type:</label>
-    <input type="number" id="bet-type" value="1" min="1">
 
     <button id="place-bet">Place Bet</button>
 </div>
@@ -32,7 +29,7 @@ const placeBetBtn = document.getElementById("place-bet");
 
 placeBetBtn.addEventListener("click", () => {
     const amount = document.getElementById("bet-amount").value;
-    const betType = document.getElementById("bet-type").value;
+    const betType = 1
 
     if (selectedFields.length === 0) {
         alert("Select at least one field");
@@ -81,7 +78,7 @@ placeBetBtn.addEventListener("click", () => {
     fields.forEach(field => {
         field.addEventListener('click', () => {
             field.classList.toggle('selected');
-            const number = field.dataset.number;
+            const number = field.dataset.id;
             if (selectedFields.includes(number)) {
                 selectedFields = selectedFields.filter(n => n !== number);
             }

@@ -10,6 +10,42 @@ class User(AbstractUser):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     chips = models.IntegerField(default=1000)
+    
+    # Horse Race Stats
+    horse_race_chips_bet = models.IntegerField(default=0)
+    horse_race_chips_won = models.IntegerField(default=0)
+    horse_race_games_won = models.IntegerField(default=0)
+    horse_race_games_lost = models.IntegerField(default=0)
+    horse_race_chips_lost = models.IntegerField(default=0)
+    horse_race_highest_win = models.IntegerField(default=0)
+    horse_race_highest_lost = models.IntegerField(default=0)
+    
+    # Roulette Stats
+    roulette_chips_bet = models.IntegerField(default=0)
+    roulette_chips_won = models.IntegerField(default=0)
+    roulette_games_won = models.IntegerField(default=0)
+    roulette_games_lost = models.IntegerField(default=0)
+    roulette_chips_lost = models.IntegerField(default=0)
+    roulette_highest_win = models.IntegerField(default=0)
+    roulette_highest_lost = models.IntegerField(default=0)
+    
+    # Blackjack Stats
+    blackjack_chips_bet = models.IntegerField(default=0)
+    blackjack_chips_won = models.IntegerField(default=0)
+    blackjack_games_won = models.IntegerField(default=0)
+    blackjack_games_lost = models.IntegerField(default=0)
+    blackjack_chips_lost = models.IntegerField(default=0)
+    blackjack_highest_win = models.IntegerField(default=0)
+    blackjack_highest_lost = models.IntegerField(default=0)
+    
+    # Total Stats
+    total_chips_bet = models.IntegerField(default=0)
+    total_chips_won = models.IntegerField(default=0)
+    total_games_won = models.IntegerField(default=0)
+    total_games_lost = models.IntegerField(default=0)
+    total_chips_lost = models.IntegerField(default=0)
+    total_highest_win = models.IntegerField(default=0)
+    total_highest_lost = models.IntegerField(default=0)
 
 class Comment(models.Model):
     comment = models.TextField()

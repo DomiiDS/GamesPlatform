@@ -3,7 +3,7 @@ from django.shortcuts import render, redirect, get_object_or_404, get_list_or_40
 from django.views.generic import TemplateView, ListView, UpdateView, View, DetailView
 from django.urls import reverse_lazy, reverse
 from django.views.decorators.http import require_POST
-from matplotlib.style.core import available
+#from matplotlib.style.core import available
 
 from .models import User, Comment, Race, Horse, Bet, RouletteField, RouletteWheel, RouletteBet
 from .forms import UserForm, ProfileForm, CommentForm, RoulettePickForm
@@ -183,9 +183,15 @@ def roulette_resolve(request):
     bets = RouletteBet.objects.select_related("user").prefetch_related("fields")
 
     for bet in bets:
+        bet.user.roulette_chips_bet += bet.amount
+        bet.user.total_chips_bet += bet.amount
         payout = bet.resolve()
         if payout > 0:
             bet.user.chips += payout
+            bet.user.roulette_chips_won += payout
+            bet.user.roulette_games_won += 1
+            bet.user.total_chips_won += payout
+            bet.user.total_games_won += 1
             bet.user.save()
 
     bets.delete()  # clear bets after round
@@ -233,10 +239,27 @@ def roulette_ajax(request):
     winning_field = wheel.spin()
     bets = RouletteBet.objects.select_related("user")
     for bet in bets:
+        bet.user.roulette_chips_bet += bet.amount
+        bet.user.total_chips_bet += bet.amount
         payout = bet.resolve()
         if payout > 0:
             bet.user.chips += payout
-            bet.user.save()
+            profit = payout - bet.amount
+            bet.user.roulette_chips_won += profit
+            bet.user.roulette_games_won += 1
+            bet.user.total_chips_won += profit
+            bet.user.total_games_won += 1
+            bet.user.roulette_highest_win = max(bet.user.roulette_highest_win, profit)
+            bet.user.total_highest_win = max(bet.user.total_highest_win, profit)
+        else:
+            loss = bet.amount
+            bet.user.roulette_games_lost += 1
+            bet.user.roulette_chips_lost += loss
+            bet.user.total_games_lost += 1
+            bet.user.total_chips_lost += loss
+            bet.user.roulette_highest_lost = max(bet.user.roulette_highest_lost, loss)
+            bet.user.total_highest_lost = max(bet.user.total_highest_lost, loss)
+        bet.user.save()
     bets.delete()
     return JsonResponse({"winning_number": winning_field.num,
                         "winning_color": winning_field.color,
@@ -265,12 +288,39 @@ class UpdateChipsView(View):
         try:
             data = json.loads(request.body)
             new_chips = int(data.get('chips'))
+            game = data.get('game', 'unknown')
+            bet_amount = int(data.get('bet_amount', 0))
         except (json.JSONDecodeError, ValueError, TypeError) as e:
             return JsonResponse({'success': False, 'error': str(e)}, status=400)
 
         try:
             user = request.user
+            old_chips = user.chips
             user.chips = new_chips
+            net_change = new_chips - old_chips
+
+            # Update stats
+            if game == 'blackjack':
+                user.blackjack_chips_bet += bet_amount
+                user.total_chips_bet += bet_amount
+                if net_change > 0:
+                    profit = net_change
+                    user.blackjack_chips_won += profit
+                    user.blackjack_games_won += 1
+                    user.total_chips_won += profit
+                    user.total_games_won += 1
+                    user.blackjack_highest_win = max(user.blackjack_highest_win, profit)
+                    user.total_highest_win = max(user.total_highest_win, profit)
+                else:
+                    loss = -net_change
+                    user.blackjack_games_lost += 1
+                    user.blackjack_chips_lost += loss
+                    user.total_games_lost += 1
+                    user.total_chips_lost += loss
+                    user.blackjack_highest_lost = max(user.blackjack_highest_lost, loss)
+                    user.total_highest_lost = max(user.total_highest_lost, loss)
+            # For horse_race and roulette, handled in their resolve functions
+
             user.save()
             return JsonResponse({'success': True, 'chips': new_chips}, status=200)
         except Exception as e:
@@ -304,6 +354,23 @@ def add_horse(request):
 def start_race(request):
     if request.user.is_anonymous:
             raise PermissionDenied("Log in to play games.")
+
+    # Resolve any unresolved bets as losses
+    unresolved_bets = Bet.objects.filter(resolved=False)
+    for bet in unresolved_bets:
+        loss = bet.amount
+        bet.user.horse_race_games_lost += 1
+        bet.user.horse_race_chips_lost += loss
+        bet.user.total_games_lost += 1
+        bet.user.total_chips_lost += loss
+        bet.user.horse_race_highest_lost = max(bet.user.horse_race_highest_lost, loss)
+        bet.user.total_highest_lost = max(bet.user.total_highest_lost, loss)
+        bet.user.horse_race_chips_bet += bet.amount
+        bet.user.total_chips_bet += bet.amount
+        bet.won = False
+        bet.resolved = True
+        bet.user.save()
+        bet.save()
 
     race = Race.get_singleton()
 
@@ -343,16 +410,33 @@ def set_winner(request):
 
         bets = Bet.objects.filter(resolved=False)
         for bet in bets:
+            bet.user.horse_race_chips_bet += bet.amount
+            bet.user.total_chips_bet += bet.amount
             if bet.horse == winner:
-                bet.user.chips += bet.amount * 2
+                winnings = bet.amount * 2
+                bet.user.chips += winnings
+                profit = bet.amount
+                bet.user.horse_race_chips_won += profit
+                bet.user.horse_race_games_won += 1
+                bet.user.total_chips_won += profit
+                bet.user.total_games_won += 1
+                bet.user.horse_race_highest_win = max(bet.user.horse_race_highest_win, profit)
+                bet.user.total_highest_win = max(bet.user.total_highest_win, profit)
                 bet.won = True
             else:
+                loss = bet.amount
+                bet.user.horse_race_games_lost += 1
+                bet.user.horse_race_chips_lost += loss
+                bet.user.total_games_lost += 1
+                bet.user.total_chips_lost += loss
+                bet.user.horse_race_highest_lost = max(bet.user.horse_race_highest_lost, loss)
+                bet.user.total_highest_lost = max(bet.user.total_highest_lost, loss)
                 bet.won = False
 
             bet.resolved = True
             bet.user.save()
             bet.save()
-        return JsonResponse({"success": True})
+        return JsonResponse({"success": True, "user_chips": request.user.chips})
 
 def place_bet(request):
     if request.method == "POST":

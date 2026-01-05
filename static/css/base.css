@@ -20,6 +20,12 @@ img{
     width: 30px;
 }
 
+.profile-picture {
+    border-radius: 50%;
+    height: 100px;
+    width: 100px;
+}
+
 a {
 text-decoration: none;
 color: #2f3640;
@@ -74,3 +80,77 @@ background-color: #dcdde1;
 color: #2f3640;
 }
 
+/* Statistics table styles */
+.stats-container {
+    margin-top: 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+.stats-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 2px;
+}
+.stats-table th,
+.stats-table td {
+    padding: 12px 15px;
+    border-bottom: 1px solid #eee;
+    border-right: 2px solid #fff;
+}
+.stats-table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    color: #555;
+    border-bottom: 2px solid #dee2e6;
+}
+.stats-table td {
+    font-weight: bold;
+    text-align: right;
+}
+.stats-table th:first-child {
+    text-align: left;
+    background-color: #e9ecef;
+    font-weight: 700;
+    color: #333;
+    border-right: 2px solid #dee2e6;
+    position: sticky;
+    left: 0;
+    z-index: 10;
+}
+.stats-table td:first-child {
+    text-align: left;
+    background-color: #f8f9fa;
+    font-weight: 600;
+    color: #555;
+    border-right: 2px solid #dee2e6;
+    position: sticky;
+    left: 0;
+    z-index: 5;
+}
+
+/* Color coding for different stat types */
+.stat-bet { color: #6c757d; } /* Gray for bets */
+.stat-win { color: #28a745; } /* Green for wins */
+.stat-loss { color: #dc3545; } /* Red for losses */
+.stat-games { color: #007bff; } /* Blue for games */
+
+/* Column separation */
+.stats-table th:not(:first-child) {
+    border-left: 2px solid #dee2e6;
+}
+.stats-table td:not(:first-child) {
+    border-left: 2px solid #dee2e6;
+}
+
+.stats-table tr:last-child th,
+.stats-table tr:last-child td {
+    border-bottom: none;
+}
+.stats-table tr:hover td {
+    background-color: #f8f9fa;
+}
+.stats-table tr:hover td:first-child {
+    background-color: #e9ecef;
+}

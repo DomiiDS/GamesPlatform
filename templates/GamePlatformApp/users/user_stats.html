@@ -1,18 +1,71 @@
 {% extends 'GamePlatformApp/base_navbar.html' %}
-<style>
-    img{
-        border-radius: 50%;
-        height: 100px;
-        width: 100px;
-    }
-</style>
 {% block title %}Stats{% endblock %}
 {% block content %}
-<img src = "{{ profile_user.profile_picture.url }}"></img>
-<h1>{{ profile_user.username }}</h1>
-<ul>
-    <li>Blackjack score: x</li>
-    <li>Roulette score: x</li>
-    <li>Horse racing score: x</li>
-</ul>
+<img src="{{ profile_user.profile_picture.url }}" alt="Profile Picture" class="profile-picture">
+<h1>{{ profile_user.username }}'s Gaming Statistics</h1>
+
+<div class="stats-container">
+    <table class="stats-table">
+        <thead>
+            <tr>
+                <th>Statistic</th>
+                <th>Horse Racing</th>
+                <th>Roulette</th>
+                <th>Blackjack</th>
+                <th>Overall Totals</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="stat-bet">Total Chips Bet</td>
+                <td class="stat-bet">{{ profile_user.horse_race_chips_bet }}</td>
+                <td class="stat-bet">{{ profile_user.roulette_chips_bet }}</td>
+                <td class="stat-bet">{{ profile_user.blackjack_chips_bet }}</td>
+                <td class="stat-bet">{{ profile_user.total_chips_bet }}</td>
+            </tr>
+            <tr>
+                <td class="stat-win">Chips Won</td>
+                <td class="stat-win">{{ profile_user.horse_race_chips_won }}</td>
+                <td class="stat-win">{{ profile_user.roulette_chips_won }}</td>
+                <td class="stat-win">{{ profile_user.blackjack_chips_won }}</td>
+                <td class="stat-win">{{ profile_user.total_chips_won }}</td>
+            </tr>
+            <tr>
+                <td class="stat-loss">Chips Lost</td>
+                <td class="stat-loss">{{ profile_user.horse_race_chips_lost }}</td>
+                <td class="stat-loss">{{ profile_user.roulette_chips_lost }}</td>
+                <td class="stat-loss">{{ profile_user.blackjack_chips_lost }}</td>
+                <td class="stat-loss">{{ profile_user.total_chips_lost }}</td>
+            </tr>
+            <tr>
+                <td class="stat-games">Games Won</td>
+                <td class="stat-games">{{ profile_user.horse_race_games_won }}</td>
+                <td class="stat-games">{{ profile_user.roulette_games_won }}</td>
+                <td class="stat-games">{{ profile_user.blackjack_games_won }}</td>
+                <td class="stat-games">{{ profile_user.total_games_won }}</td>
+            </tr>
+            <tr>
+                <td class="stat-games">Games Lost</td>
+                <td class="stat-games">{{ profile_user.horse_race_games_lost }}</td>
+                <td class="stat-games">{{ profile_user.roulette_games_lost }}</td>
+                <td class="stat-games">{{ profile_user.blackjack_games_lost }}</td>
+                <td class="stat-games">{{ profile_user.total_games_lost }}</td>
+            </tr>
+            <tr>
+                <td class="stat-win">Largest Win</td>
+                <td class="stat-win">{{ profile_user.horse_race_highest_win }}</td>
+                <td class="stat-win">{{ profile_user.roulette_highest_win }}</td>
+                <td class="stat-win">{{ profile_user.blackjack_highest_win }}</td>
+                <td class="stat-win">{{ profile_user.total_highest_win }}</td>
+            </tr>
+            <tr>
+                <td class="stat-loss">Largest Loss</td>
+                <td class="stat-loss">{{ profile_user.horse_race_highest_lost }}</td>
+                <td class="stat-loss">{{ profile_user.roulette_highest_lost }}</td>
+                <td class="stat-loss">{{ profile_user.blackjack_highest_lost }}</td>
+                <td class="stat-loss">{{ profile_user.total_highest_lost }}</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
 {% endblock %}

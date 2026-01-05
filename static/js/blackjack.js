@@ -1,7 +1,7 @@
 let suits = new Array('club', 'diamond', 'heart', 'spade');
 let ranks = new Array('2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A');
 
-async function sendChips(finalChips) {
+async function sendChips(finalChips, betAmount) {
     const url = '/update-chips/';
     document.querySelector('#tokens').textContent = `Twoje żetony: ${finalChips}`;
     try {
@@ -11,7 +11,9 @@ async function sendChips(finalChips) {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                chips: finalChips
+                chips: finalChips,
+                game: 'blackjack',
+                bet_amount: betAmount
             })
         });
         const data = await response.json();
@@ -377,7 +379,7 @@ class Game {
                 for (let i = 0; i < this.players.length; i++) {
                     displayPlayerHands(this, i);
                 }
-                await sendChips(this.players[i].chips)
+                await sendChips(this.players[i].chips, 0)
             }
             if (this.players[0].hands[0].value == 22) {
                 for (let i = 1; i < this.players.length; i++) {
@@ -388,7 +390,7 @@ class Game {
                     for (let i = 0; i < this.players.length; i++) {
                         displayPlayerHands(this, i);
                     }
-                    await sendChips(this.players[i].chips)
+                    await sendChips(this.players[i].chips, 0)
                 }
             }
         }
@@ -403,7 +405,7 @@ class Game {
                         for (let i = 0; i < this.players.length; i++) {
                             displayPlayerHands(this, i);
                         }
-                        await sendChips(this.players[i].chips)
+                        await sendChips(this.players[i].chips, 0)
                         if (this.players[i].hands.length > this.results[i].length) {
                             const diff = this.players[i].hands.length - this.results[i].length;
                             for (let k = 0; k < diff; k++) {
@@ -434,6 +436,13 @@ class Game {
             }
         }
         this.players[0].hands[0].cards[0].revealed = true;
+        let betAmounts = new Array();
+        for (let p = 1; p < this.players.length; p++) {
+            betAmounts[p] = 0;
+            for (let j = 0; j < this.players[p].hands.length; j++) {
+                betAmounts[p] += this.players[p].hands[j].stake;
+            }
+        }
         for (let i = 1; i < this.players.length; i++) {
             for (let j = 0; j < this.players[i].hands.length; j++) {
                 if (this.players[i].hands[j].value != 0) {
@@ -450,7 +459,7 @@ class Game {
                 }
             }
             console.log(this.players[i].chips);
-            if (i != 0) { await sendChips(this.players[i].chips) }
+            if (i != 0) { await sendChips(this.players[i].chips, betAmounts[i]) }
         }
         this.createPlayerAreas();
 

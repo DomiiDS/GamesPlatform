@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+{% extends 'GamePlatformApp/base_navbar.html' %}
+{% block title %}Leaderboard{% endblock %}
+{% block content %}
+{% load static %}
+<link rel="stylesheet" href="{% static 'css/leaderboard.css' %}">
+<table class="leaderboard">
+    <thead>
+        <tr>
+            <th rowspan="2">#</th>
+            <th rowspan="2">Gracz</th>
+            <th colspan="4">Horse Racing</th>
+            <th colspan="4">Roulette</th>
+            <th colspan="4">Blackjack</th>
+            <th colspan="4">Overall</th>
+        </tr>
+        <tr>
+            <th><a href="?sort=horse_won">Chips Won</a></th>
+            <th><a href="?sort=horse_lost">Chips Lost</a></th>
+            <th><a href="?sort=horse_games_won">Games Won</a></th>
+            <th><a href="?sort=horse_games_lost">Games Lost</a></th>
+            <th><a href="?sort=roulette_won">Chips Won</a></th>
+            <th><a href="?sort=roulette_lost">Chips Lost</a></th>
+            <th><a href="?sort=roulette_games_won">Games Won</a></th>
+            <th><a href="?sort=roulette_games_lost">Games Lost</a></th>
+            <th><a href="?sort=blackjack_won">Chips Won</a></th>
+            <th><a href="?sort=blackjack_lost">Chips Lost</a></th>
+            <th><a href="?sort=blackjack_games_won">Games Won</a></th>
+            <th><a href="?sort=blackjack_games_lost">Games Lost</a></th>
+            <th><a href="?sort=total_won">Chips Won</a></th>
+            <th><a href="?sort=total_lost">Chips Lost</a></th>
+            <th><a href="?sort=total_games_won">Games Won</a></th>
+            <th><a href="?sort=total_games_lost">Games Lost</a></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for u in users %}
+        <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ u.username }}</td>
+            <td>{{ u.horse_race_chips_won }}</td>
+            <td>{{ u.horse_race_chips_lost }}</td>
+            <td>{{ u.horse_race_games_won }}</td>
+            <td>{{ u.horse_race_games_lost }}</td>
+            <td>{{ u.roulette_chips_won }}</td>
+            <td>{{ u.roulette_chips_lost }}</td>
+            <td>{{ u.roulette_games_won }}</td>
+            <td>{{ u.roulette_games_lost }}</td>
+            <td>{{ u.blackjack_chips_won }}</td>
+            <td>{{ u.blackjack_chips_lost }}</td>
+            <td>{{ u.blackjack_games_won }}</td>
+            <td>{{ u.blackjack_games_lost }}</td>
+            <td>{{ u.total_chips_won }}</td>
+            <td>{{ u.total_chips_lost }}</td>
+            <td>{{ u.total_games_won }}</td>
+            <td>{{ u.total_games_lost }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

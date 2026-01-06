@@ -49,5 +49,6 @@ urlpatterns = [
     path("roulette-resolve/", roulette_resolve, name="roulette-resolve"),
     path("roulette-bet/", roulette_bet, name="roulette-bet"),
     path("roulette-spin-ajax", roulette_ajax, name="roulette-ajax"),
+    path('leaderboard/', leaderboard_view, name='leaderboard'),
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

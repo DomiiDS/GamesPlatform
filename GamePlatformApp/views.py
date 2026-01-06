@@ -4,6 +4,7 @@ from django.views.generic import TemplateView, ListView, UpdateView, View, Detai
 from django.urls import reverse_lazy, reverse
 from django.views.decorators.http import require_POST
 #from matplotlib.style.core import available
+from django.contrib.auth import get_user_model
 
 from .models import User, Comment, Race, Horse, Bet, RouletteField, RouletteWheel, RouletteBet
 from .forms import UserForm, ProfileForm, CommentForm, RoulettePickForm
@@ -11,6 +12,27 @@ from django.core.exceptions import PermissionDenied
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 import json, random
+
+User = get_user_model()
+
+SORTABLE_FIELDS = {
+    'horse_won': 'horse_race_chips_won',
+    'horse_lost': 'horse_race_chips_lost',
+    'horse_games_won': 'horse_race_games_won',
+    'horse_games_lost': 'horse_race_games_lost',
+    'roulette_won': 'roulette_chips_won',
+    'roulette_lost': 'roulette_chips_lost',
+    'roulette_games_won': 'roulette_games_won',
+    'roulette_games_lost': 'roulette_games_lost',
+    'blackjack_won': 'blackjack_chips_won',
+    'blackjack_lost': 'blackjack_chips_lost',
+    'blackjack_games_won': 'blackjack_games_won',
+    'blackjack_games_lost': 'blackjack_games_lost',
+    'total_won': 'total_chips_won',
+    'total_lost': 'total_chips_lost',
+    'total_games_won': 'total_games_won',
+    'total_games_lost': 'total_games_lost',
+}
 
 class HomeView(ListView):
     model = User
@@ -461,3 +483,17 @@ def place_bet(request):
         return redirect("race-room")
 
     return redirect("race-room")
+
+def leaderboard_view(request):
+    sort_key = request.GET.get('sort', 'total_won')
+    direction = request.GET.get('dir', 'desc')
+
+    sort_field = SORTABLE_FIELDS.get(sort_key, 'total_chips_won')
+    ordering = f"-{sort_field}" if direction == 'desc' else sort_field
+
+    users = User.objects.all().order_by(ordering)
+
+    return render(request, 'GamePlatformApp/leaderboard.html', {
+        'users': users,
+        'sort': sort_key,
+    })

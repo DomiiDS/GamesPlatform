@@ -1,0 +1,18 @@
+table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+}
+
+th, td {
+    border: 1px solid #000000;
+    padding: 6px;
+    text-align: center;
+}
+
+th {
+    background: #f7eeb5;
+    font-weight: bold;
+}

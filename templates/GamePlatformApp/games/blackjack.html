@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Blackjack</title>
@@ -7,7 +8,17 @@
     <link rel="stylesheet" href="{% static 'css/blackjack.css' %}">
 
 </head>
+
 <body>
+
+    <div id="betting-area">
+        <label for="bet-amount">Bet amount:</label>
+        <input type="number" id="bet-amount" min="1" step="1">
+        <button id="place-bet">Start Game</button>
+    </div>
+
+    <button id="restart-game" disabled>Restart Game</button>
+    
     <div id="players-container"></div>
     <p id="tokens">Twoje żetony: {{ chips }} </p>
     <button id="hit">Hit</button>
@@ -27,4 +38,5 @@
         var static_dir = {% static 'cards' %};
     </script>
 </body>
+
 </html>

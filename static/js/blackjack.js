@@ -1,5 +1,7 @@
 let suits = new Array('club', 'diamond', 'heart', 'spade');
 let ranks = new Array('2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A');
+let currentGame = null;
+let currentBet = 0;
 
 async function sendChips(finalChips, betAmount) {
     const url = '/update-chips/';
@@ -337,12 +339,13 @@ class DealerHand extends Hand {
 }
 
 class Game {
-    constructor(number) {
+    constructor(number, betAmount) {
+        this.betAmount = betAmount;
         this.deck = new Deck();
         this.deck.shuffle();
-        this.players = new Array(new Dealer(this.deck, Infinity, 100));
+        this.players = new Array(new Dealer(this.deck, Infinity, 0));
         for (let i = 1; i < number + 1; i++) {
-            this.players.push(new Player(this.deck, PLAYER_CHIPS, 100));
+            this.players.push(new Player(this.deck, PLAYER_CHIPS, betAmount));
         }
         this.results = new Array();
         for (let i = 0; i < this.players.length; i++) {
@@ -352,6 +355,7 @@ class Game {
     async begin() {
         for (let i = 1; i < this.players.length; i++) {
             console.log(this.players[i].chips);
+            await sendChips(this.players[i].chips, 0)
         }
         for (let i = 0; i < this.players.length; i++) {
             for (let j = 0; j < this.players[i].hands.length; j++) {
@@ -376,10 +380,10 @@ class Game {
                 bets[i - 1] = await this.players[i].insurance_bet();
                 this.createPlayerAreas();
 
-                for (let i = 0; i < this.players.length; i++) {
-                    displayPlayerHands(this, i);
-                }
                 await sendChips(this.players[i].chips, 0)
+                for (let j = 0; j < this.players.length; j++) {
+                    displayPlayerHands(this, j);
+                }
             }
             if (this.players[0].hands[0].value == 22) {
                 for (let i = 1; i < this.players.length; i++) {
@@ -387,10 +391,10 @@ class Game {
                     bets[i - 1] = 0;
                     this.createPlayerAreas();
 
-                    for (let i = 0; i < this.players.length; i++) {
-                        displayPlayerHands(this, i);
-                    }
                     await sendChips(this.players[i].chips, 0)
+                    for (let j = 0; j < this.players.length; j++) {
+                        displayPlayerHands(this, j);
+                    }
                 }
             }
         }
@@ -402,10 +406,10 @@ class Game {
                         this.results[i][j] = await this.players[i].hands[j].choose();
                         this.createPlayerAreas();
 
+                        await sendChips(this.players[i].chips, 0)
                         for (let i = 0; i < this.players.length; i++) {
                             displayPlayerHands(this, i);
                         }
-                        await sendChips(this.players[i].chips, 0)
                         if (this.players[i].hands.length > this.results[i].length) {
                             const diff = this.players[i].hands.length - this.results[i].length;
                             for (let k = 0; k < diff; k++) {
@@ -435,6 +439,8 @@ class Game {
                 }
             }
         }
+        ["hit", "stand", "double-down", "split", "surrender", "insurance", "no-insurance"]
+            .forEach(id => document.getElementById(id).disabled = true);
         this.players[0].hands[0].cards[0].revealed = true;
         let betAmounts = new Array();
         for (let p = 1; p < this.players.length; p++) {
@@ -491,4 +497,30 @@ class Game {
     }
 }
 
-new Game(1).begin();
+["hit", "stand", "double-down", "split", "surrender", "insurance", "no-insurance"]
+    .forEach(id => document.getElementById(id).disabled = true);
+document.getElementById("place-bet").addEventListener("click", () => {
+    const betInput = document.getElementById("bet-amount");
+    const bet = parseInt(betInput.value);
+
+    if (isNaN(bet) || bet <= 0) {
+        alert("Enter a valid bet amount");
+        return;
+    }
+
+    if (bet > PLAYER_CHIPS) {
+        alert("Not enough chips");
+        return;
+    }
+
+    currentBet = bet;
+    document.getElementById("betting-area").style.display = "none";
+    document.getElementById("restart-game").disabled = false;
+
+    currentGame = new Game(1, bet);
+    currentGame.begin();
+});
+
+document.getElementById("restart-game").addEventListener("click", () => {
+    location.reload()
+});

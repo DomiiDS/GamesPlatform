@@ -132,3 +132,7 @@ button:disabled, #hit:disabled, #stand:disabled, #double-down:disabled, #split:d
     width: 125px;
     height: auto;
 }
+
+#betting-area {
+    margin-bottom: 15px;
+}

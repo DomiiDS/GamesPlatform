@@ -9,6 +9,7 @@ from django.contrib.auth import get_user_model
 from .models import User, Comment, Race, Horse, Bet, RouletteField, RouletteWheel, RouletteBet
 from .forms import UserForm, ProfileForm, CommentForm, RoulettePickForm
 from django.core.exceptions import PermissionDenied
+from django.core.paginator import Paginator
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 import json, random
@@ -36,11 +37,12 @@ SORTABLE_FIELDS = {
 
 class HomeView(ListView):
     model = User
+    paginate_by = 10
     template_name = 'GamePlatformApp/home.html'
     context_object_name = 'users'
 
     def get_queryset(self):
-        return User.objects.filter(is_active=True)
+        return User.objects.filter(is_active=True).order_by('id')
 
 class RegisterView(TemplateView):
     template_name = "GamePlatformApp/register.html"
@@ -65,11 +67,12 @@ class RegisterSuccessView(TemplateView):
 
 class UserListView(ListView):
     model = User
+    paginate_by = 10
     template_name = 'GamePlatformApp/users/user_list.html'
     context_object_name = 'users'
 
     def get_queryset(self):
-        return User.objects.filter(is_active=True)
+        return User.objects.filter(is_active=True).order_by('id')
 
 class UserUpdateView(UpdateView):
     model = User
@@ -487,13 +490,18 @@ def place_bet(request):
 def leaderboard_view(request):
     sort_key = request.GET.get('sort', 'total_won')
     direction = request.GET.get('dir', 'desc')
+    page_number = request.GET.get('page', 1)
 
     sort_field = SORTABLE_FIELDS.get(sort_key, 'total_chips_won')
     ordering = f"-{sort_field}" if direction == 'desc' else sort_field
 
     users = User.objects.all().order_by(ordering)
 
+    paginator = Paginator(users, 25)  # 25 users per page
+    page_obj = paginator.get_page(page_number)
+
     return render(request, 'GamePlatformApp/leaderboard.html', {
+        'page_obj': page_obj,
         'users': users,
         'sort': sort_key,
     })

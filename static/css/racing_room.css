@@ -1,0 +1,216 @@
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #548455;
+    margin: 0;
+    padding: 20px;
+}
+
+h1, h2 {
+    color: #333;
+    text-align: center;
+}
+
+.top-bar {
+    position: relative;
+    display: flex;
+    align-items: center;
+    background: linear-gradient(#1b5e20, #2e7d32);
+    padding: 12px 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+.left-controls {
+    display: flex;
+    gap: 10px;
+}
+
+#page-title {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #e8f5e9;
+    margin: 0;
+    font-size: 28px;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.6);
+    pointer-events: none;
+}
+
+#back-button {
+    padding: 10px 20px;
+    background-color: #3db043;
+    color: white;
+    border: 1px solid #1b5e20;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    margin: 10px;
+    text-decoration: none;
+}
+
+#back-button:hover {
+    background-color: linear-gradient(#81c784, #43a047);
+}
+
+#new-race {
+    padding: 10px 20px;
+    background-color: #008CBA;
+    color: white;
+    border: 1px solid #004056;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    margin: 10px;
+}
+
+#start {
+    padding: 10px 20px;
+    background-color: #008CBA;
+    color: white;
+    border: 1px solid #004056;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 20px;
+    display: block;
+}
+
+#new-race:hover, #start:hover {
+    background-color: #007B9A;
+}
+
+#new-race:disabled, #start:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+.chips-display {
+    padding: 5px;
+    background: #ddd;
+    width: 150px;
+    border: 1px solid #aaa;
+    border-radius: 5px;
+    margin: 10px auto;
+    text-align: center;
+}
+
+form {
+    margin: 10px auto;
+    width: 300px;
+    padding: 10px;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+form label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+form select {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+}
+
+form input {
+    width: 90%;
+    padding: 8px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+}
+
+form button {
+    padding: 10px;
+    background-color: #f44336;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 100%;
+}
+
+form button:hover {
+    background-color: #d32f2f;
+}
+
+#winner {
+    font-size: 24px;
+    font-weight: bold;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #e8f5e9;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.6);
+    pointer-events: none;
+    margin-top: 10px;
+}
+
+#race-track {
+    width: 800px;
+    margin: 50px auto;
+    border: 2px solid #333;
+    padding: 10px;
+    background: #409240;
+}
+
+.lane {
+    position: relative;
+    height: 60px;
+    margin: 20px 0;
+    border-bottom: 1px solid #999;
+}
+
+.horse-name {
+    position: absolute;
+    top: -20px;
+    left: 0;
+    font-weight: bold;
+    color: #e8f5e9;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+}
+
+.horse {
+    width: 50px;
+    height: auto;
+    position: absolute;
+    left: 0;
+    top: 0;
+}
+
+.horse-normal {
+    filter: none;
+}
+
+.horse-sepia {
+    filter: sepia(100%);
+}
+
+.horse-invert {
+    filter: invert(100%);
+}
+
+.horse-blue {
+    filter: hue-rotate(200deg);
+}
+
+.horse-red {
+    filter: hue-rotate(10deg);
+}
+
+.horse-pink {
+    filter: hue-rotate(300deg);
+}
+
+.horse-green {
+    filter: hue-rotate(120deg);
+}

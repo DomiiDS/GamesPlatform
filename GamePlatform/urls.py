@@ -26,8 +26,6 @@ urlpatterns = [
     path('', HomeView.as_view(), name="home"),
     path('games', GamesListView.as_view(), name="games"),
     path('games/blackjack', BlackjackView.as_view(), name="blackjack"),
-    path('games/coin_toss', GamesListView.as_view(), name="coin_toss"),
-    path('games/horse_race', GamesListView.as_view(), name="horse_race"),
     path('games/roulette', RouletteView.as_view(), name="roulette"),
     path('login', LoginView.as_view(template_name='GamePlatformApp/login.html'), name="login"),
     path('logout', LogoutView.as_view(template_name='GamePlatformApp/login.html'), name="logout"),

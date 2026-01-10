@@ -240,7 +240,7 @@ def roulette_bet(request):
             return JsonResponse({"error": "No fields selected"}, status=400)
 
         if user.chips < amount:
-            return JsonResponse({"error": "Za mało chipsów!"}, status=400)
+            return JsonResponse({"error": "Not enough chips!"}, status=400)
 
         user.chips -= amount
         user.save()
@@ -409,8 +409,6 @@ def start_race(request):
 
     race.horses.set(selected_horses)
 
-    #co to wgl za losowanie zwycięzcy przed wyścigiem lol
-    #race.run_race()
     return redirect('race-room')
 
 def race_room(request):
@@ -472,7 +470,7 @@ def place_bet(request):
         user = request.user
 
         if user.chips < amount:
-            return JsonResponse({"error": "Za mało chipsów!"}, status=400)
+            return JsonResponse({"error": "Not enough chips!"}, status=400)
 
         user.chips -= amount
         user.save()

@@ -1,124 +1,42 @@
 <!DOCTYPE html>
 {% load static %}
-<style>
-    #race-track {
-        width: 800px;
-        margin: 50px auto;
-        border: 2px solid #333;
-        padding: 10px;
-        background: #eee;
-    }
-     .lane {
-        position: relative;
-        height: 60px;
-        margin: 20px 0;
-        border-bottom: 1px solid #999;
-    }
-
-    .horse-name {
-        position: absolute;
-        top: -20px;
-        left: 0;
-        font-weight: bold;
-    }
-
-    .horse {
-        width: 50px;
-        height: auto;
-        position: absolute;
-        left: 0;
-        top: 0;
-    }
-
-    .horse-normal {
-        filter: none;
-    }
-
-    .horse-sepia {
-        filter: sepia(100%);
-    }
-
-    .horse-invert {
-        filter: invert(100%);
-    }
-
-    .horse-blue {
-        filter: hue-rotate(200deg);
-    }
-
-    .horse-red {
-        filter: hue-rotate(10deg);
-    }
-
-    .horse-pink {
-        filter: hue-rotate(300deg);
-    }
-
-    .horse-green {
-        filter: hue-rotate(120deg);
-    }
-
-    #winner {
-        margin-top: 20px;
-        font-size: 24px;
-        font-weight: bold;
-        color: green;
-    }
-</style>
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <title>Horse racing</title>
+    <title>Horse race</title>
+    <link rel="stylesheet" href="{% static 'css/racing_room.css' %}">
 </head>
 <body>
 
-<button id="new-race">Nowy wyścig</button>
+<div class="top-bar">
+    <div class="left-controls">
+        <a href="{% url 'games' %}" id="back-button">Back to Games</a>
+        <button id="new-race">New Race</button>
+    </div>
 
-<h1>Wynik wyścigu</h1>
-
-<h2>Uczestnicy:</h2>
-<ul>
-{% for horse in race.horses.all %}
-  <li>{{ horse.name }} (speed: {{ horse.speed }})</li>
-{% endfor %}
-</ul>
-
-<div style="padding: 10px; background: #ddd; width: 200px; border: 1px solid #aaa;">
-    Chipsy: <strong>{{ chips }}</strong>
+    <h1 id="page-title">Horse Race</h1>
 </div>
 
-<h2>Obstaw</h2>
+<div class="chips-display">
+    Chips: <strong>{{ chips }}</strong>
+</div>
 
 <form action="{% url 'place-bet' %}" method="POST" id="bet-form">
     {% csrf_token %}
-    <label>Koń:</label>
+    <label>Horse:</label>
     <select name="horse_id">
         {% for horse in race.horses.all %}
             <option value="{{ horse.id }}">{{ horse.name }}</option>
         {% endfor %}
     </select>
 
-    <label>Kwota (chips):</label>
+    <label>Amount (chips):</label>
     <input type="number" name="amount" min="1" required>
 
-    <button type="submit">Obstaw</button>
+    <button type="submit">Place bet</button>
 </form>
 
-<button id="start">Rozpocznij wyścig</button>
-
-<h2>Twoje ostatnie zakłady:</h2>
-<ul>
-    {% for bet in bets %}
-        <li>
-            {{ bet.horse }}:
-            {% if bet.won %}
-                wygrana +{{ bet.amount }} chips
-            {% else %}
-                przegrana -{{ bet.amount }}
-            {% endif %}
-        </li>
-    {% endfor %}
-</ul>
+<button id="start">Start race</button>
 
 <div id="winner"></div>
 
@@ -147,10 +65,17 @@
         winnerDiv.textContent = '';
         let finished = false;
         let winnerHorse = null;
+        let speedFrames = 0;
         function move() {
+            if (speedFrames < 50) speedFrames++;
+            else speedFrames = 0;
+
             horses.forEach(horse => {
                 const current = parseFloat(horse.style.left || 0);
-                const speed = parseFloat(horse.dataset.speed) * 0.5 + Math.random();
+                if (speedFrames == 0) {
+                    horse.dataset.speed = 0.25 + Math.random();
+                }
+                const speed = parseFloat(horse.dataset.speed);
                 const next = current + speed
                 horse.style.left = Math.min(next, trackWidth) + 'px';
                 if (next >= trackWidth && !finished) {
@@ -163,7 +88,7 @@
             }
             else {
                 const winnerName = winnerHorse.previousElementSibling.textContent;
-                winnerDiv.textContent = winnerName + " wygrał!";
+                winnerDiv.textContent = winnerName + " won!";
 
                 fetch("{% url 'set-winner' %}", {
                     method: "POST",
@@ -191,5 +116,20 @@
     });
 
 </script>
+
+<h2>Your last bets:</h2>
+<ul>
+    {% for bet in bets %}
+        <li>
+            {{ bet.horse }}:
+            {% if bet.won %}
+                won +{{ bet.amount }} chips
+            {% else %}
+                lost -{{ bet.amount }}
+            {% endif %}
+        </li>
+    {% endfor %}
+</ul>
+
 </body>
 </html>

@@ -485,21 +485,24 @@ def place_bet(request):
 
     return redirect("race-room")
 
-def leaderboard_view(request):
-    sort_key = request.GET.get('sort', 'total_won')
-    direction = request.GET.get('dir', 'desc')
-    page_number = request.GET.get('page', 1)
+class LeaderboardView(ListView):
+    model = User
+    template_name = 'GamePlatformApp/leaderboard.html'
+    context_object_name = 'users'
+    paginate_by = 25
 
-    sort_field = SORTABLE_FIELDS.get(sort_key, 'total_chips_won')
-    ordering = f"-{sort_field}" if direction == 'desc' else sort_field
+    def get_ordering(self):
+        sort_key = self.request.GET.get('sort', 'total_won')
+        direction = self.request.GET.get('dir', 'desc')
 
-    users = User.objects.all().order_by(ordering)
+        sort_field = SORTABLE_FIELDS.get(sort_key, 'total_chips_won')
 
-    paginator = Paginator(users, 25)  # 25 users per page
-    page_obj = paginator.get_page(page_number)
+        if direction == 'desc':
+            return f'-{sort_field}'
+        return sort_field
 
-    return render(request, 'GamePlatformApp/leaderboard.html', {
-        'page_obj': page_obj,
-        'users': users,
-        'sort': sort_key,
-    })
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['sort'] = self.request.GET.get('sort', 'total_won')
+        context['dir'] = self.request.GET.get('dir', 'desc')
+        return context

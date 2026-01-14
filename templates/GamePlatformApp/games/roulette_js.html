@@ -18,10 +18,15 @@
     </div>
 </div>
 <div id="bet-panel">
+
     <label>Bet Amount:</label>
     <input type="number" id="bet-amount" min="1" required>
 
     <button id="place-bet">Place Bet</button>
+    <button id="place-bet-hl">Place Bet High/Low</button>
+    <button id="place-bet-eo">Place Bet Even/Odd</button>
+
+
 </div>
 
 <script>
@@ -68,6 +73,95 @@ placeBetBtn.addEventListener("click", () => {
 });
 </script>
 
+<script>
+const placeBetHLBtn = document.getElementById("place-bet-hl");
+
+placeBetHLBtn.addEventListener("click", () => {
+    const amount = document.getElementById("bet-amount").value;
+    const betType = 2; // HIGH / LOW
+
+    if (selectedFields.length !== 1) {
+        alert("Select exactly one field");
+        return;
+    }
+
+    if (!amount || amount <= 0) {
+        alert("Invalid bet amount");
+        return;
+    }
+
+    const formData = new FormData();
+    selectedFields.forEach(f => formData.append("fields", f));
+    formData.append("amount", amount);
+    formData.append("bet_type", betType);
+    formData.append("csrfmiddlewaretoken", "{{ csrf_token }}");
+
+    fetch("{% url 'roulette-bet' %}", {
+        method: "POST",
+        body: formData
+    })
+    .then(res => {
+        if (!res.ok) {
+            return res.json().then(data => { throw data; });
+        }
+        return res.text();
+    })
+    .then(() => {
+        placeBetHLBtn.disabled = true;
+        document.getElementById("place-bet").disabled = true;
+        document.getElementById("spin").disabled = false;
+    })
+    .catch(err => {
+        alert(err.error || "Bet failed");
+    });
+});
+</script>
+
+<script>
+const placeBetEOBtn = document.getElementById("place-bet-eo");
+
+placeBetEOBtn.addEventListener("click", () => {
+    const amount = document.getElementById("bet-amount").value;
+    const betType = 3; // EVEN / ODD
+
+    if (selectedFields.length !== 1) {
+        alert("Select exactly one field");
+        return;
+    }
+
+    if (!amount || amount <= 0) {
+        alert("Invalid bet amount");
+        return;
+    }
+
+    const formData = new FormData();
+    selectedFields.forEach(f => formData.append("fields", f));
+    formData.append("amount", amount);
+    formData.append("bet_type", betType);
+    formData.append("csrfmiddlewaretoken", "{{ csrf_token }}");
+
+    fetch("{% url 'roulette-bet' %}", {
+        method: "POST",
+        body: formData
+    })
+    .then(res => {
+        if (!res.ok) {
+            return res.json().then(data => { throw data; });
+        }
+        return res.text();
+    })
+    .then(() => {
+        document.getElementById("place-bet").disabled = true;
+        document.getElementById("place-bet-hl").disabled = true;
+        placeBetEOBtn.disabled = true;
+        document.getElementById("spin").disabled = false;
+    })
+    .catch(err => {
+        alert(err.error || "Bet failed");
+    });
+});
+</script>
+
 
 <button id="spin" disabled>Spin</button>
 <p style="color:white">Chips: <span id="chips-count">{{ user.chips }}</span></p>
@@ -98,7 +192,7 @@ placeBetBtn.addEventListener("click", () => {
         const winningFieldNumber = data.winning_number;
         const fieldsArr = [...document.querySelectorAll('.roulette-field')]
         let i = 0;
-        let speed = 50;
+        let speed = 20;
         const loops = 3;
         const winningIndex = fieldsArr.findIndex(f => f.dataset.number == winningFieldNumber);
         const steps = loops * fieldsArr.length + winningIndex;

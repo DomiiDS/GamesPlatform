@@ -104,7 +104,7 @@ class RouletteWheel(models.Model):
     def get_singleton(cls):
         obj, created = cls.objects.get_or_create(pk=1)
         return obj
-    
+
     def spin(self):
         fields = list(self.fields.all())
         if not fields:
@@ -122,7 +122,36 @@ class RouletteBet(models.Model):
 
     def resolve(self):
         fields = list(self.fields.all())
-        if any([field.won for field in fields]):
-            return self.amount + self.bet_type * self.amount
-        else:
+        winning_field = RouletteField.objects.filter(won=True).first()
+
+        if not winning_field or not fields:
             return 0
+
+        # STRAIGHT NUMBER BET
+        if self.bet_type == 1:
+            if any(field.won for field in fields):
+                return self.amount * 2
+            return 0
+
+        # HIGH / LOW 
+        if self.bet_type == 2:
+            pivot = fields[0].num
+            if winning_field.num > pivot:
+                return self.amount * 2
+            return 0
+
+        # EVEN / ODD
+        if self.bet_type == 3:
+            pivot = fields[0].num
+
+            # zero always loses
+            if winning_field.num == 0:
+                return 0
+
+            if (winning_field.num % 2) == (pivot % 2):
+                return self.amount * 2
+            return 0
+
+        return 0
+
+

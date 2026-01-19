@@ -1,0 +1,115 @@
+body {
+    background: #009900;
+    min-height: 100vh;
+    margin: 0;
+    color: white;
+}
+
+.page {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 0;
+}
+
+#roulette-container {
+    width: 100%;
+    overflow-x: hidden;
+    margin-bottom: 40px;
+}
+
+#roulette-wheel {
+    display: flex;
+    gap: 10px;
+    padding: 20px;
+    justify-content: center;
+}
+
+.roulette-field {
+    width: 55px;
+    height: 55px;
+    border-radius: 8px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.roulette-field.red {
+    background: linear-gradient(#cc0000, #990000);
+}
+
+.roulette-field.black {
+    background: linear-gradient(#222, #000);
+}
+
+.roulette-field.green {
+    background: linear-gradient(#009900, #006600);
+}
+
+.roulette-field:hover {
+    transform: translateY(-3px);
+}
+
+.roulette-field.selected {
+    outline: 3px solid gold;
+}
+
+.roulette-field.active {
+    transform: scale(1.15);
+}
+
+#bet-panel {
+    background: #006600;
+    padding: 15px 20px;
+    border-radius: 12px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+#bet-panel input {
+    width: 100px;
+    padding: 6px;
+    border-radius: 6px;
+    border: none;
+}
+
+#bet-panel button {
+    padding: 8px 16px;
+    border-radius: 6px;
+    border: none;
+    background: gold;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+#bet-panel button:disabled {
+    background: #999;
+    cursor: not-allowed;
+}
+
+#spin {
+    margin-top: 10px;
+    padding: 10px 30px;
+    font-size: 18px;
+    border-radius: 10px;
+    border: none;
+    background: #004400;
+    color: white;
+    cursor: pointer;
+}
+
+#spin:disabled {
+    background: #333;
+    cursor: not-allowed;
+}
+
+#chips-count {
+    font-weight: bold;
+    color: gold;
+}

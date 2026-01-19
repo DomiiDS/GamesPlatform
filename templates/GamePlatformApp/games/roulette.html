@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Roulette</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/roulette.css' %}">
+</head>
+<body>
+    <form method="get" action="{% url 'start-roulette' %}">
+        <button type="submit">New Game</button>
+    </form>
+    <h1>Roulette</h1>
+
+    <div>
+        <p>User: {{ user.username }}</p>
+        <p>Chips: {{ chips }}</p>
+    </div>
+
+    {% if winning_field %}
+        <div>
+            <h2>Last Winning Number: {{ winning_field.num }} ({{ winning_field.color }})</h2>
+        </div>
+    {% endif %}
+
+    <form method="post" action="{% url 'roulette-bet' %}">
+        {% csrf_token %}
+        <h3>Pick your fields:</h3>
+        <div id="betting-table">
+            {% for field in wheel.fields.all %}
+                <label style="color: {{ field.color }}">
+                    <input type="checkbox" name="fields" value="{{ field.id }}">
+                    {{ field.num }}
+                </label>
+                {% if forloop.counter|divisibleby:6 %}<br>{% endif %}
+            {% endfor %}
+        </div>
+
+        <div>
+            <label for="amount">Bet Amount:</label>
+            <input type="number" name="amount" id="amount" min="1" required>
+        </div>
+
+        <div>
+            <label for="bet_type">Bet Type Multiplier:</label>
+            <input type="number" name="bet_type" id="bet_type" min="1" value="1">
+        </div>
+
+        <button type="submit">Place Bet</button>
+    </form>
+
+    <form method="get" action="{% url 'roulette-resolve' %}">
+        <button type="submit">Spin Wheel</button>
+    </form>
+
+</body>
+</html>

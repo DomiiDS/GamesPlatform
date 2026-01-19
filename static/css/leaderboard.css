@@ -1,0 +1,71 @@
+table.leaderboard {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    table-layout: fixed;
+    font-family: "Inter", "Segoe UI", Arial, sans-serif;
+    font-size: 14px;
+    background-color: #ffffff;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+}
+
+
+table.leaderboard th,
+table.leaderboard td {
+    padding: 8px 10px;
+    text-align: center;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+
+table.leaderboard thead th {
+    background: linear-gradient(180deg, #f8fafc, #eef2f7);
+    font-weight: 600;
+    font-size: 11px;
+    letter-spacing: 0.03em;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: unset;
+    line-height: 1.2;
+}
+
+table.leaderboard thead th a {
+    color: #1d4ed8;
+    text-decoration: none;
+    display: inline-block;
+}
+
+table.leaderboard thead th a:hover {
+    text-decoration: underline;
+}
+
+table.leaderboard tbody td {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+table.leaderboard tbody tr:nth-child(even) {
+    background-color: #f9fafb;
+}
+
+table.leaderboard tbody tr:hover {
+    background-color: #eef2ff;
+}
+
+table.leaderboard tbody td:first-child {
+    font-weight: 600;
+}
+
+table.leaderboard tbody td:nth-child(2) {
+    text-align: left;
+    font-weight: 500;
+}
+
+@media (max-width: 1200px) {
+    table.leaderboard {
+        font-size: 13px;
+    }
+}

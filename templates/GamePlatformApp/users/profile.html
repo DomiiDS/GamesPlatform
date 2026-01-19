@@ -1,5 +1,5 @@
 <style>
-    img{
+    .profile-picture img {
         border-radius: 50%;
         height: 100px;
         width: 100px;
@@ -9,7 +9,9 @@
 {% block title %}Profile{% endblock %}
 
 {% block content %}
-<img src = "{{ profile_user.profile_picture.url }}"></img>
+<div class="profile-picture">
+    <img src="{{ profile_user.profile_picture.url }}"></img>
+</div>
 <h1>{{ profile_user.username }}</h1>
 {% if request.user == profile_user %}
 <p><a href="{% url 'profile-edit' user.pk %}">Edit profile</a></p>
@@ -17,13 +19,13 @@
 <p>{{ profile_user.bio }}</p>
 <p>{{ profile_user.created_at }}</p>
 <p>{{ profile_user.updated_at }}</p>
-<a href='{% url 'user-stats' profile_user.pk %}'>View stats</a>
+<a href="{% url 'user-stats' profile_user.pk %}">View stats</a>
 <h2>Comments</h2>
-{% for c in comments  %}
-    <strong>{{ c.author.username }}</strong> - {{ c.created_at }}
-    <p>{{ c.comment }}</p>
+{% for c in comments %}
+<strong>{{ c.author.username }}</strong> - {{ c.created_at }}
+<p>{{ c.comment }}</p>
 {% empty %}
-    <p>No comments yet.</p>
+<p>No comments yet.</p>
 {% endfor %}
 
 <hr>

@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Horse race</title>
+    <link rel="stylesheet" href="{% static 'css/racing_room.css' %}">
+</head>
+<body>
+
+<div class="top-bar">
+    <div class="left-controls">
+        <a href="{% url 'games' %}" id="back-button">Back to Games</a>
+        <button id="new-race">New Race</button>
+    </div>
+
+    <h1 id="page-title">Horse Race</h1>
+</div>
+
+<div class="chips-display">
+    Chips: <strong>{{ chips }}</strong>
+</div>
+
+<form action="{% url 'place-bet' %}" method="POST" id="bet-form">
+    {% csrf_token %}
+    <label>Horse:</label>
+    <select name="horse_id">
+        {% for horse in race.horses.all %}
+            <option value="{{ horse.id }}">{{ horse.name }}</option>
+        {% endfor %}
+    </select>
+
+    <label>Amount (chips):</label>
+    <input type="number" name="amount" min="1" required>
+
+    <button type="submit">Place bet</button>
+</form>
+
+<button id="start">Start race</button>
+
+<div id="winner"></div>
+
+<div id="race-track">
+    {% for horse in race.horses.all %}
+    <div class="lane">
+        <div class="horse-name">{{ horse.name }}</div>
+        <img class="horse horse-{{ horse.color }}" src="{% static 'horse.png' %}" data-speed="{{ horse.speed }}" alt="{{ horse.name }}">
+    </div>
+    {% endfor %}
+</div>
+
+<script>
+    const horses = document.querySelectorAll('.horse');
+    const trackWidth = document.getElementById('race-track').offsetWidth - 50;
+    const winnerDiv = document.getElementById('winner');
+    const start = document.getElementById('start');
+    const betForm = document.getElementById('bet-form');
+    const newRace = document.getElementById('new-race');
+
+    start.addEventListener('click', () => {
+        start.disabled = true;
+        newRace.disabled = true;
+        betForm.querySelectorAll("input, select, button").forEach(el => el.disabled = true);
+        horses.forEach(horse => horse.style.left = '0px');
+        winnerDiv.textContent = '';
+        let finished = false;
+        let winnerHorse = null;
+        let speedFrames = 0;
+        function move() {
+            if (speedFrames < 50) speedFrames++;
+            else speedFrames = 0;
+
+            horses.forEach(horse => {
+                const current = parseFloat(horse.style.left || 0);
+                if (speedFrames == 0) {
+                    horse.dataset.speed = 0.25 + Math.random();
+                }
+                const speed = parseFloat(horse.dataset.speed);
+                const next = current + speed
+                horse.style.left = Math.min(next, trackWidth) + 'px';
+                if (next >= trackWidth && !finished) {
+                    finished = true;
+                    winnerHorse = horse;
+                }
+            });
+            if (!finished) {
+                requestAnimationFrame(move)
+            }
+            else {
+                const winnerName = winnerHorse.previousElementSibling.textContent;
+                winnerDiv.textContent = winnerName + " won!";
+
+                fetch("{% url 'set-winner' %}", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": "{{ csrf_token }}",
+                    },
+                    body: JSON.stringify({ winner_name: winnerName })
+                })
+                .then(res => res.json())
+                .then(data => console.log("Winner saved:", data))
+                .catch(err => console.error(err))
+                .finally(() => {
+                    newRace.disabled = false;
+                });
+            }
+
+        }
+
+        move();
+    })
+
+    newRace.addEventListener("click", () => {
+        window.location.href = "{% url 'start-race' %}";
+    });
+
+</script>
+
+<h2>Your last bets:</h2>
+<ul>
+    {% for bet in bets %}
+        <li>
+            {{ bet.horse }}:
+            {% if bet.won %}
+                won +{{ bet.amount }} chips
+            {% else %}
+                lost -{{ bet.amount }}
+            {% endif %}
+        </li>
+    {% endfor %}
+</ul>
+
+</body>
+</html>

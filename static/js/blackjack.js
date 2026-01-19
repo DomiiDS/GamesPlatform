@@ -1,0 +1,526 @@
+let suits = new Array('club', 'diamond', 'heart', 'spade');
+let ranks = new Array('2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A');
+let currentGame = null;
+let currentBet = 0;
+
+async function sendChips(finalChips, betAmount) {
+    const url = '/update-chips/';
+    document.querySelector('#tokens').textContent = `Twoje żetony: ${finalChips}`;
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                chips: finalChips,
+                game: 'blackjack',
+                bet_amount: betAmount
+            })
+        });
+        const data = await response.json();
+        if (data.success) {
+            console.log('Zetony zaktualizowane:', data.chips);
+        } else {
+            console.error('Blad', data.error);
+        }
+    }
+    catch (error) {
+        console.error('Blad fetch', error)
+    }
+}
+
+function play(buttonIds) {
+    return new Promise(resolve => {
+        const handlers = {};
+
+        const allButtons = [
+            document.getElementById("hit"),
+            document.getElementById("stand"),
+            document.getElementById("double-down"),
+            document.getElementById("split"),
+            document.getElementById("surrender"),
+            document.getElementById("insurance"),
+            document.getElementById("no-insurance")
+        ];
+
+        for (const button of allButtons) {
+            if (buttonIds.includes(button.id)) {
+                button.disabled = false;
+            } else {
+                button.disabled = true;
+            }
+        }
+
+        buttonIds.forEach(id => {
+            const btn = document.getElementById(id);
+            handlers[id] = () => {
+                buttonIds.forEach(otherId => {
+                    document.getElementById(otherId)
+                        .removeEventListener('click', handlers[otherId]);
+                });
+                resolve(id);
+            };
+
+            btn.addEventListener('click', handlers[id]);
+        });
+    });
+}
+
+function displayHand(hand, containerId) {
+    const container = document.getElementById(containerId);
+    container.innerHTML = "";
+
+    hand.cards.forEach(card => {
+        const img = document.createElement("img");
+
+        img.src = `/static/cards/${card.suit}-${card.rank}.png`;
+
+        if (!card.revealed) {
+            img.src = `/static/cards/back.png`;
+        }
+
+        img.classList.add("card");
+        container.appendChild(img);
+    });
+}
+
+function displayPlayerHands(game, playerIndex) {
+    const container = document.getElementById(`player-${playerIndex}-hands`);
+    container.innerHTML = "";
+
+    const player = game.players[playerIndex];
+
+    player.hands.forEach((hand, handIndex) => {
+        const handDiv = document.createElement("div");
+        handDiv.classList.add("hand-container");
+
+        handDiv.innerHTML = `
+            <p>Hand ${handIndex + 1} (Stake: ${hand.stake})</p>
+            <div id="player-${playerIndex}-hand-${handIndex}" class="hand"></div>
+        `;
+
+        container.appendChild(handDiv);
+
+        // Display the cards for this hand
+        displayHand(hand, `player-${playerIndex}-hand-${handIndex}`);
+    });
+}
+
+class Card {
+    constructor(suit, rank) {
+        this.suit = suit;
+        this.rank = rank;
+        this.revealed = true;
+    }
+}
+
+class Deck {
+    constructor(number = 1) {
+        this.cards = new Array();
+        for (let i = 0; i < number; i++) {
+            for (let j = 0; j < suits.length; j++) {
+                for (let k = 0; k < ranks.length; k++) {
+                    this.cards.push(new Card(suits[j], ranks[k]));
+                }
+            }
+        }
+    }
+    shuffle() {
+        let i = this.cards.length, j, temp;
+        while (--i > 0) {
+            j = Math.floor(Math.random() * (i + 1));
+            temp = this.cards[j];
+            this.cards[j] = this.cards[i];
+            this.cards[i] = temp;
+        }
+    }
+    pop() {
+        return this.cards.pop();
+    }
+    push(card) {
+        this.cards.push(card);
+    }
+}
+
+class Hand {
+    constructor(deck, player, stake) {
+        this.deck = deck;
+        this.player = player;
+        this.stake = stake;
+        this.cards = new Array();
+        this.value = 0;
+    }
+    get_starting_cards() {
+        let card = this.deck.pop();
+        let new_val = this.value + this.get_card_value(card);
+        this.cards.push(card);
+        this.value = new_val;
+        card = this.deck.pop();
+        new_val = this.value + this.get_card_value(card);
+        this.cards.push(card);
+        this.value = new_val;
+        if (this.value == 21) {
+            this.value = 22;
+            return this.resolve();
+        } else {
+            return -1;
+        }
+    }
+    async choose() {
+        if (this.cards.length == 2 && this.cards[0].rank == this.cards[1].rank && this.player.hands.length == 1) {
+            var choice = await play(["hit", "stand", "double-down", "split", "surrender"]);
+        } else if (this.cards.length == 2 && this.player.hands.length == 1) {
+            var choice = await play(["hit", "stand", "double-down", "surrender"]);
+        } else if (this.cards.length == 2) {
+            var choice = await play(["hit", "stand", "double-down"]);
+        } else {
+            var choice = await play(["hit", "stand"]);
+        }
+
+        switch (choice) {
+            case "hit":
+                return this.hit();
+            case "stand":
+                return this.stand();
+            case "double-down":
+                return this.double_down();
+            case "split":
+                return this.split();
+            case "surrender":
+                return this.surrender();
+        }
+    }
+    get_card_value(card) {
+        for (let i = 0; i < 9; i++) {
+            if (card?.rank == ranks[i]) {
+                return i + 2;
+            }
+        }
+        for (let i = 9; i < 12; i++) {
+            if (card?.rank == ranks[i]) {
+                return 10;
+            }
+        }
+        if (card?.rank == ranks[12]) {
+            if (this.value < 11) {
+                return 11;
+            } else {
+                return 1;
+            }
+        }
+    }
+    resolve() {
+        return this.value;
+    }
+    hit() {
+        let card = this.deck.pop();
+        let new_val = this.value + this.get_card_value(card);
+        this.cards.push(card);
+        this.value = new_val;
+        if (this.value == 21) {
+            return this.resolve();
+        } else if (this.value > 21) {
+            this.value = 0;
+            return this.resolve();
+        } else {
+            return -1;
+        }
+    }
+    double_down() {
+        this.player.chips = this.player.chips - this.stake;
+        //sendChips(this.player.chips)
+        this.stake = this.stake * 2;
+        let card = this.deck.pop();
+        let new_val = this.value + this.get_card_value(card);
+        this.cards.push(card);
+        this.value = new_val;
+        if (this.value > 21) {
+            this.value = 0;
+        }
+        return this.resolve();
+    }
+    stand() {
+        return this.resolve();
+    }
+    split() {
+        this.player.chips = this.player.chips - this.stake;
+        //sendChips(this.player.chips)
+        this.player.split(this);
+        return -1;
+    }
+    surrender() {
+        this.player.chips = this.player.chips + Math.floor(this.stake / 2);
+        //sendChips(this.player.chips)
+        this.stake = Math.ceil(this.stake / 2);
+        return this.resolve();
+    }
+}
+
+class Player {
+    constructor(deck, chips, stake) {
+        this.hands = new Array(new Hand(deck, this, stake));
+        this.chips = chips - stake;
+        this.insurance_turn = false;
+    }
+    split(hand) {
+        let hand1 = new Hand(hand.deck, this, hand.stake);
+        let hand2 = new Hand(hand.deck, this, hand.stake);
+        hand1.value = hand1.get_card_value(hand.cards[0]);
+        hand2.value = hand2.get_card_value(hand.cards[1]);
+        hand1.cards.push(hand.cards[0]);
+        hand2.cards.push(hand.cards[1]);
+
+        let card = hand1.deck.pop();
+        let new_val = hand1.value + hand1.get_card_value(card);
+        hand1.cards.push(card);
+        hand1.value = new_val;
+
+        card = hand2.deck.pop();
+        new_val = hand2.value + hand2.get_card_value(card);
+        hand2.cards.push(card);
+        hand2.value = new_val;
+
+        this.hands[0] = hand1;
+        this.hands[1] = hand2;
+        console.log(this.hands[0].value);
+        for (let k = 0; k < this.hands[0].cards.length; k++) {
+            console.log(this.hands[0].cards[k].suit + " " + this.hands[0].cards[k].rank);
+        }
+        console.log(this.hands[1].value);
+        for (let k = 0; k < this.hands[1].cards.length; k++) {
+            console.log(this.hands[1].cards[k].suit + " " + this.hands[1].cards[k].rank);
+        }
+    }
+    async insurance_bet() {
+        var choice = await play(["insurance", "no-insurance"]);
+        if (choice == "insurance") {
+            this.chips = this.chips - Math.floor(this.hands[0].stake / 2);
+            //sendChips(this.chips);
+            return Math.floor(this.hands[0].stake / 2);
+        } else if (choice == "no-insurance") {
+            return 0;
+        }
+    }
+}
+
+class Dealer extends Player {
+    constructor(deck, chips, stake) {
+        super(deck, chips, stake);
+        this.hands = new Array(new DealerHand(deck, this, 0));
+    }
+}
+
+class DealerHand extends Hand {
+    async choose() {
+        if (this.value < 17) {
+            return this.hit();
+        } else {
+            return this.stand();
+        }
+    }
+    get_starting_cards() {
+        let card = this.deck.pop();
+        let new_val = this.value + this.get_card_value(card);
+        card.revealed = false;
+        this.cards.push(card);
+        this.value = new_val;
+        card = this.deck.pop();
+        new_val = this.value + this.get_card_value(card);
+        this.cards.push(card);
+        this.value = new_val;
+        if (this.value == 21) {
+            this.value = 22;
+            return this.resolve();
+        } else {
+            return -1;
+        }
+    }
+}
+
+class Game {
+    constructor(number, betAmount) {
+        this.betAmount = betAmount;
+        this.deck = new Deck();
+        this.deck.shuffle();
+        this.players = new Array(new Dealer(this.deck, Infinity, 0));
+        for (let i = 1; i < number + 1; i++) {
+            this.players.push(new Player(this.deck, PLAYER_CHIPS, betAmount));
+        }
+        this.results = new Array();
+        for (let i = 0; i < this.players.length; i++) {
+            this.results.push(new Array());
+        }
+    }
+    async begin() {
+        for (let i = 1; i < this.players.length; i++) {
+            console.log(this.players[i].chips);
+            await sendChips(this.players[i].chips, 0)
+        }
+        for (let i = 0; i < this.players.length; i++) {
+            for (let j = 0; j < this.players[i].hands.length; j++) {
+                this.results[i][j] = this.players[i].hands[j].get_starting_cards();
+                console.log("player " + i + " hand " + j);
+                for (let k = 0; k < this.players[i].hands[j].cards.length; k++) {
+                    if (this.players[i].hands[j].cards[k].revealed) {
+                        console.log(this.players[i].hands[j].cards[k].suit + " " + this.players[i].hands[j].cards[k].rank);
+                    }
+                }
+            }
+        }
+        this.createPlayerAreas();
+
+        for (let i = 0; i < this.players.length; i++) {
+            displayPlayerHands(this, i);
+        }
+        if (['10', 'J', 'Q', 'K', 'A'].includes(this.players[0].hands[0].cards[1].rank)) {
+            let bets = new Array();
+            for (let i = 1; i < this.players.length; i++) {
+                this.createTurnArea(i)
+                bets[i - 1] = await this.players[i].insurance_bet();
+                this.createPlayerAreas();
+
+                await sendChips(this.players[i].chips, 0)
+                for (let j = 0; j < this.players.length; j++) {
+                    displayPlayerHands(this, j);
+                }
+            }
+            if (this.players[0].hands[0].value == 22) {
+                for (let i = 1; i < this.players.length; i++) {
+                    this.players[i].chips = this.players[i].chips + bets[i - 1] * 2;
+                    bets[i - 1] = 0;
+                    this.createPlayerAreas();
+
+                    await sendChips(this.players[i].chips, 0)
+                    for (let j = 0; j < this.players.length; j++) {
+                        displayPlayerHands(this, j);
+                    }
+                }
+            }
+        }
+        if (this.results[0][0] != 22) {
+            for (let i = 1; i < this.players.length; i++) {
+                for (let j = 0; j < this.players[i].hands.length; j++) {
+                    while (this.results[i][j] == -1) {
+                        this.createTurnArea(i)
+                        this.results[i][j] = await this.players[i].hands[j].choose();
+                        this.createPlayerAreas();
+
+                        await sendChips(this.players[i].chips, 0)
+                        for (let i = 0; i < this.players.length; i++) {
+                            displayPlayerHands(this, i);
+                        }
+                        if (this.players[i].hands.length > this.results[i].length) {
+                            const diff = this.players[i].hands.length - this.results[i].length;
+                            for (let k = 0; k < diff; k++) {
+                                this.results[i].push(-1);
+                            }
+                        }
+                        console.log("player " + i + " hand " + j);
+                        for (let k = 0; k < this.players[i].hands[j].cards.length; k++) {
+                            console.log(this.players[i].hands[j].cards[k].suit + " " + this.players[i].hands[j].cards[k].rank);
+                        }
+                    }
+                }
+            }
+            this.players[0].hands[0].cards[0].revealed = true;
+            for (let j = 0; j < this.players[0].hands.length; j++) {
+                while (this.results[0][j] == -1) {
+                    this.results[0][j] = await this.players[0].hands[j].choose();
+                    this.createPlayerAreas();
+
+                    for (let i = 0; i < this.players.length; i++) {
+                        displayPlayerHands(this, i);
+                    }
+                }
+                console.log("player 0 hand " + j);
+                for (let k = 0; k < this.players[0].hands[j].cards.length; k++) {
+                    console.log(this.players[0].hands[j].cards[k].suit + " " + this.players[0].hands[j].cards[k].rank);
+                }
+            }
+        }
+        ["hit", "stand", "double-down", "split", "surrender", "insurance", "no-insurance"]
+            .forEach(id => document.getElementById(id).disabled = true);
+        this.players[0].hands[0].cards[0].revealed = true;
+        let betAmounts = new Array();
+        for (let p = 1; p < this.players.length; p++) {
+            betAmounts[p] = 0;
+            for (let j = 0; j < this.players[p].hands.length; j++) {
+                betAmounts[p] += this.players[p].hands[j].stake;
+            }
+        }
+        for (let i = 1; i < this.players.length; i++) {
+            for (let j = 0; j < this.players[i].hands.length; j++) {
+                if (this.players[i].hands[j].value != 0) {
+                    if (this.players[i].hands[j].value == this.players[0].hands[0].value) {
+                        this.players[i].chips = this.players[i].chips + this.players[i].hands[j].stake;
+                        this.players[i].hands[j].stake = 0;
+                    } else if (this.players[i].hands[j].value == 22) {
+                        this.players[i].chips = this.players[i].chips + 3 * this.players[i].hands[j].stake;
+                        this.players[i].hands[j].stake = 0;
+                    } else if (this.players[i].hands[j].value > this.players[0].hands[0].value) {
+                        this.players[i].chips = this.players[i].chips + 2 * this.players[i].hands[j].stake;
+                        this.players[i].hands[j].stake = 0;
+                    }
+                }
+            }
+            console.log(this.players[i].chips);
+            if (i != 0) { await sendChips(this.players[i].chips, betAmounts[i]) }
+        }
+        this.createPlayerAreas();
+
+        for (let i = 0; i < this.players.length; i++) {
+            displayPlayerHands(this, i);
+        }
+    }
+    createPlayerAreas() {
+        const container = document.getElementById("players-container");
+        container.innerHTML = "";
+
+        for (let i = 0; i < this.players.length; i++) {
+            const playerDiv = document.createElement("div");
+            playerDiv.classList.add("player");
+
+            playerDiv.innerHTML = `
+                <h3>${i === 0 ? "Dealer" : "Player " + i}</h3>
+                <div id="player-${i}-hands" class="hands"></div>
+            `;
+
+            container.appendChild(playerDiv);
+        }
+    }
+    createTurnArea(playerId) {
+        const container = document.getElementById("turn");
+        container.innerHTML = `
+            <h3>Player ${playerId}'s turn</h3>
+            `;
+    }
+}
+
+["hit", "stand", "double-down", "split", "surrender", "insurance", "no-insurance"]
+    .forEach(id => document.getElementById(id).disabled = true);
+document.getElementById("place-bet").addEventListener("click", () => {
+    const betInput = document.getElementById("bet-amount");
+    const bet = parseInt(betInput.value);
+
+    if (isNaN(bet) || bet <= 0) {
+        alert("Enter a valid bet amount");
+        return;
+    }
+
+    if (bet > PLAYER_CHIPS) {
+        alert("Not enough chips");
+        return;
+    }
+
+    currentBet = bet;
+    document.getElementById("betting-area").style.display = "none";
+    document.getElementById("restart-game").disabled = false;
+
+    currentGame = new Game(1, bet);
+    currentGame.begin();
+});
+
+document.getElementById("restart-game").addEventListener("click", () => {
+    location.reload()
+});
